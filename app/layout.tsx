@@ -30,7 +30,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <nav className="h-full px-4 py-4 bg-foreground text-background">
           <h1 className="font-bold">Boodschappelijk</h1>
         </nav>
+
+        <div className="xl:w-4xl xl:mx-auto">
         {children}
+        </div>
       </body>
     </html>
   );

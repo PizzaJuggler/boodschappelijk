@@ -1,5 +1,7 @@
 
 import { Card } from "@/components/ui/card";
+import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CommandEmpty } from "cmdk";
 import Image from "next/image";
 
 const products = [
@@ -21,6 +23,12 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-background px-4 py-4 gap-4">
       <h1 className="font-bold text-xl">Pizza Party</h1>
+      <Command className=" rounded-lg border">
+       <CommandInput placeholder="Zoek product"/> 
+       <CommandList>
+        <CommandEmpty>Geen producten gevonden</CommandEmpty>
+       </CommandList>
+        </Command>
       {
         products.map((product) => (
           <Card key={product.id} className="hover:shadow-md px-4 transition-shadow cursor-pointer flex gap-4 flex-row items-center py-0">
