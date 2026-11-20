@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -27,13 +28,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <nav className="h-full px-4 py-4 bg-foreground text-background">
+        <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
           <h1 className="font-bold">Boodschappelijk</h1>
         </nav>
 
         <div className="xl:w-4xl xl:mx-auto">
-        {children}
+          {children}
         </div>
+
+        <BottomSheet />
       </body>
     </html>
   );

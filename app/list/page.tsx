@@ -1,7 +1,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { CommandEmpty } from "cmdk";
+import { Search } from "lucide-react";
 import Image from "next/image";
 
 const products = [
@@ -23,12 +25,13 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-background px-4 py-4 gap-4">
       <h1 className="font-bold text-xl">Pizza Party</h1>
-      <Command className=" rounded-lg border">
-       <CommandInput placeholder="Zoek product"/> 
-       <CommandList>
-        <CommandEmpty>Geen producten gevonden</CommandEmpty>
-       </CommandList>
-        </Command>
+ <InputGroup className="max-w-xs">
+      <InputGroupInput placeholder="Search..." />
+      <InputGroupAddon className="bg-primary">
+        <Search className="text-white"/>
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
+    </InputGroup>
       {
         products.map((product) => (
           <Card key={product.id} className="hover:shadow-md px-4 transition-shadow cursor-pointer flex gap-4 flex-row items-center py-0">
