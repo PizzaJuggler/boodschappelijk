@@ -8,11 +8,12 @@ function ProductCard({ product }: { product: Product }) {
       key={product.id}
       className="hover:shadow-md transition-shadow cursor-pointer flex gap-4 flex-row items-center py-0 pl-2"
     >
-      <div className="relative w-10 shrink-0 self-stretch ">
+      <div className="relative w-10 shrink-0 self-stretch flex items-center justify-center">
         <Image
           src={product.imgSrc}
           alt={product.name}
-          fill
+          width={64}
+          height={64}
           className="object-cover"
         />
       </div>
