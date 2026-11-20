@@ -1,4 +1,6 @@
 import { Card } from "@/components/ui/card";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Search } from "lucide-react";
 import Link from "next/link";
 
 const lists = [
@@ -14,18 +16,16 @@ const lists = [
 
 export default function Home() {
   return (
-    
     <div className="flex flex-col bg-background px-4 py-4 gap-4">
-      <h1 className="font-bold text-2xl">Lijsten</h1>
-      {
-        lists.map((list) => (
-          <Link key={list.id} href='/list'>
-            <Card className="hover:shadow-md px-4 transition-shadow cursor-pointer">
-              {list.name}
-            </Card>
-          </Link>
-        ))
-      }
+      Geselecteerde lijst:
+      <InputGroup className="max-w-xs border-2 border-primary py-4">
+        <InputGroupInput placeholder="Zoek naar producten" />
+        <InputGroupAddon>
+          <Search className="text-primary" />
+        </InputGroupAddon>
+      </InputGroup>
+
+
     </div>
   );
 }

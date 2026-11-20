@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <h1 className="font-bold">Boodschappelijk</h1>
         </nav>
 
-        <div className="xl:w-4xl xl:mx-auto">
+        <div className="md:w-3xl md:mx-auto">
           {children}
         </div>
 
