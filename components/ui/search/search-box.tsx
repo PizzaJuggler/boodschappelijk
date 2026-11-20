@@ -3,25 +3,58 @@
 import { useState } from "react";
 import SearchInput from "./search-input";
 import SearchResults from "./search-results";
-import { useSearchProducts } from "@/api/price-prophet";
+import {
+  searchProductsResponse,
+  searchProductsResponseSuccess,
+  useSearchProducts,
+} from "@/api/price-prophet";
+import { useDebounce } from "react-use";
+import { Product } from "@/types/product";
+import { ProductSearchResult, SearchResponse } from "@/api/price-prophet/model";
 
 export default function SearchBox() {
   const [query, setQuery] = useState("");
-  const { data, isLoading } = useSearchProducts({ q: query }, { query: { enabled: query.trim().length >= 3 } });
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
+  useDebounce(
+    () => {
+      setDebouncedQuery(query.trim());
+      console.log("whoa");
+    },
+    1000,
+    [query],
+  );
+
+  const mapper: (products: ProductSearchResult[]) => Product[] = (products) => {
+    return products.map((product) => ({
+      id: product.base_product_id ?? "",
+      imgSrc: product.image_url ?? "",
+      name: product.name ?? "",
+      quantity: product.quantity ?? "",
+    }));
+  };
+
+  const { data, isLoading } = useSearchProducts(
+    { q: debouncedQuery },
+    {
+      query: {
+        enabled: debouncedQuery.length >= 4,
+        select: (response) =>
+          mapper(
+            "data" in response && "results" in response.data
+              ? response.data.results
+              : [],
+          ),
+      },
+    },
+  );
 
   return (
-    <div className="relative w-full max-w-xl">
-      <SearchInput
-        value={query}
-        onChange={setQuery}
-      />
+    <div className="relative w-full">
+      <SearchInput value={query} onChange={setQuery} />
 
       {query.length > 0 && (
-        <SearchResults
-          results={[]}
-          loading={isLoading}
-        />
+        <SearchResults results={data ?? []} loading={isLoading} />
       )}
     </div>
   );

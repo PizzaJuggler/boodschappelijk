@@ -1,5 +1,6 @@
 
 import { ProductCard } from "@/components/ui/product-card";
+import { Product } from "@/types/product";
 
 const products: Product[] = [
   {

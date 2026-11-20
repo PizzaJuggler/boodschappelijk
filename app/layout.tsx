@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +26,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        inter.variable,
+      )}
     >
       <body className="min-h-full flex flex-col font-sans">
         <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
@@ -34,10 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </nav>
 
         <Providers>
-
-          <div className="md:w-3xl md:mx-auto">
-            {children}
-          </div>
+          <div className="md:w-3xl md:mx-auto pb-20">{children}</div>
 
           <BottomSheet />
         </Providers>
