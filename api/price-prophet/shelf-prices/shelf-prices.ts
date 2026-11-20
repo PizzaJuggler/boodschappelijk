@@ -33,8 +33,13 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -118,7 +123,7 @@ export const getSearchShelfPricesUrl = (params?: SearchShelfPricesParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/shelf-prices?${stringifiedParams}` : `/api/v1/shelf-prices`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/shelf-prices?${stringifiedParams}` : `/price-prophet/api/v1/shelf-prices`
 }
 
 /**
@@ -159,12 +164,12 @@ export const searchShelfPrices = async (params?: SearchShelfPricesParams, option
 
 export const getSearchShelfPricesQueryKey = (params?: SearchShelfPricesParams,) => {
     return [
-    `/api/v1/shelf-prices`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/shelf-prices`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getSearchShelfPricesQueryOptions = <TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(params?: SearchShelfPricesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>, fetch?: RequestInit}
+export const getSearchShelfPricesQueryOptions = <TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(params?: SearchShelfPricesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -179,7 +184,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchShelfPricesQueryResult = NonNullable<Awaited<ReturnType<typeof searchShelfPrices>>>
@@ -201,13 +206,79 @@ export type SearchShelfPricesQueryError = Error | HTTPValidationError
  * @summary Search current regular (non-promotional) shelf prices
  */
 export function useSearchShelfPrices<TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(
- params?: SearchShelfPricesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  SearchShelfPricesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchShelfPrices>>,
+          TError,
+          Awaited<ReturnType<typeof searchShelfPrices>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search the regular assortment by name and/or EAN, filtered by retailer: the price a retailer charges when a SKU is NOT on offer, including the many products that never are. `/match/*` only answers for an EAN you already hold; this is where you start without one.
+ *
+ * **Access.** Pro, Business or trial key in `X-API-Key`; a free key gets 403. Your plan's rate limit applies.
+ *
+ * **Filters.** Give at least one of `q`, `ean` or `retailer`. Without any, the endpoint pages through the whole collection, which is rarely what you want. `ean` takes one EAN or up to 100 separated by commas, so refreshing your own list of products takes a few requests instead of one per product. `price_changed_since` (ISO 8601) returns only rows whose price moved since then, so combined with `ean` you fetch just what changed in your own list. `max_age_days` (1-60, default 60) leaves out rows we have not seen for longer: a chain that reissues SKU ids leaves the old row behind until it expires. `q` is matched as one phrase against the product name, case-insensitively. A phrase of 4+ characters matches anywhere in the name (`brood` finds `volkorenbrood`); a shorter one only as a whole word.
+ *
+ * **Order and paging.** Most recently observed first, then by `retailer` and `shelf_id`. The order is total, so paging with `page`/`page_size` returns every row exactly once while the data does not change. It changes nightly (roughly 01:00-02:30 Dutch time), so run a full sync outside that window. `total` is the number of matching rows.
+ *
+ * **Coverage.** Nine of the ten chains. Lidl publishes no regular prices and returns nothing. Aldi publishes no barcode, so `ean` is always null there: search by name. Ekoplaza's rows carry `ean: null` as well: the barcode costs a request per product, and Ekoplaza's organic range is almost never sold elsewhere. Prices are national per chain: there is no store level, and no loyalty-card or personal-offer prices. A row that has not been seen for 60 days drops out. See /api for the current breakdown per chain.
+ *
+ * **Freshness.** Current price only, not a history. `price_changed_at` says since when this price holds (regular prices move rarely, about 0.2% of SKUs a day); `last_seen` says when we last observed the row, normally last night. Responses are cached for up to an hour.
+ * @summary Search current regular (non-promotional) shelf prices
+ */
+export function useSearchShelfPrices<TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(
+ params?: SearchShelfPricesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchShelfPrices>>,
+          TError,
+          Awaited<ReturnType<typeof searchShelfPrices>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search the regular assortment by name and/or EAN, filtered by retailer: the price a retailer charges when a SKU is NOT on offer, including the many products that never are. `/match/*` only answers for an EAN you already hold; this is where you start without one.
+ *
+ * **Access.** Pro, Business or trial key in `X-API-Key`; a free key gets 403. Your plan's rate limit applies.
+ *
+ * **Filters.** Give at least one of `q`, `ean` or `retailer`. Without any, the endpoint pages through the whole collection, which is rarely what you want. `ean` takes one EAN or up to 100 separated by commas, so refreshing your own list of products takes a few requests instead of one per product. `price_changed_since` (ISO 8601) returns only rows whose price moved since then, so combined with `ean` you fetch just what changed in your own list. `max_age_days` (1-60, default 60) leaves out rows we have not seen for longer: a chain that reissues SKU ids leaves the old row behind until it expires. `q` is matched as one phrase against the product name, case-insensitively. A phrase of 4+ characters matches anywhere in the name (`brood` finds `volkorenbrood`); a shorter one only as a whole word.
+ *
+ * **Order and paging.** Most recently observed first, then by `retailer` and `shelf_id`. The order is total, so paging with `page`/`page_size` returns every row exactly once while the data does not change. It changes nightly (roughly 01:00-02:30 Dutch time), so run a full sync outside that window. `total` is the number of matching rows.
+ *
+ * **Coverage.** Nine of the ten chains. Lidl publishes no regular prices and returns nothing. Aldi publishes no barcode, so `ean` is always null there: search by name. Ekoplaza's rows carry `ean: null` as well: the barcode costs a request per product, and Ekoplaza's organic range is almost never sold elsewhere. Prices are national per chain: there is no store level, and no loyalty-card or personal-offer prices. A row that has not been seen for 60 days drops out. See /api for the current breakdown per chain.
+ *
+ * **Freshness.** Current price only, not a history. `price_changed_at` says since when this price holds (regular prices move rarely, about 0.2% of SKUs a day); `last_seen` says when we last observed the row, normally last night. Responses are cached for up to an hour.
+ * @summary Search current regular (non-promotional) shelf prices
+ */
+export function useSearchShelfPrices<TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(
+ params?: SearchShelfPricesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search the regular assortment by name and/or EAN, filtered by retailer: the price a retailer charges when a SKU is NOT on offer, including the many products that never are. `/match/*` only answers for an EAN you already hold; this is where you start without one.
+ *
+ * **Access.** Pro, Business or trial key in `X-API-Key`; a free key gets 403. Your plan's rate limit applies.
+ *
+ * **Filters.** Give at least one of `q`, `ean` or `retailer`. Without any, the endpoint pages through the whole collection, which is rarely what you want. `ean` takes one EAN or up to 100 separated by commas, so refreshing your own list of products takes a few requests instead of one per product. `price_changed_since` (ISO 8601) returns only rows whose price moved since then, so combined with `ean` you fetch just what changed in your own list. `max_age_days` (1-60, default 60) leaves out rows we have not seen for longer: a chain that reissues SKU ids leaves the old row behind until it expires. `q` is matched as one phrase against the product name, case-insensitively. A phrase of 4+ characters matches anywhere in the name (`brood` finds `volkorenbrood`); a shorter one only as a whole word.
+ *
+ * **Order and paging.** Most recently observed first, then by `retailer` and `shelf_id`. The order is total, so paging with `page`/`page_size` returns every row exactly once while the data does not change. It changes nightly (roughly 01:00-02:30 Dutch time), so run a full sync outside that window. `total` is the number of matching rows.
+ *
+ * **Coverage.** Nine of the ten chains. Lidl publishes no regular prices and returns nothing. Aldi publishes no barcode, so `ean` is always null there: search by name. Ekoplaza's rows carry `ean: null` as well: the barcode costs a request per product, and Ekoplaza's organic range is almost never sold elsewhere. Prices are national per chain: there is no store level, and no loyalty-card or personal-offer prices. A row that has not been seen for 60 days drops out. See /api for the current breakdown per chain.
+ *
+ * **Freshness.** Current price only, not a history. `price_changed_at` says since when this price holds (regular prices move rarely, about 0.2% of SKUs a day); `last_seen` says when we last observed the row, normally last night. Responses are cached for up to an hour.
+ * @summary Search current regular (non-promotional) shelf prices
+ */
+export function useSearchShelfPrices<TData = Awaited<ReturnType<typeof searchShelfPrices>>, TError = Error | HTTPValidationError>(
+ params?: SearchShelfPricesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchShelfPrices>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getSearchShelfPricesQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -268,7 +339,7 @@ export const getListShelfPriceHistoryUrl = (params?: ListShelfPriceHistoryParams
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/shelf-prices/history?${stringifiedParams}` : `/api/v1/shelf-prices/history`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/shelf-prices/history?${stringifiedParams}` : `/price-prophet/api/v1/shelf-prices/history`
 }
 
 /**
@@ -309,12 +380,12 @@ export const listShelfPriceHistory = async (params?: ListShelfPriceHistoryParams
 
 export const getListShelfPriceHistoryQueryKey = (params?: ListShelfPriceHistoryParams,) => {
     return [
-    `/api/v1/shelf-prices/history`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/shelf-prices/history`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListShelfPriceHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(params?: ListShelfPriceHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>, fetch?: RequestInit}
+export const getListShelfPriceHistoryQueryOptions = <TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(params?: ListShelfPriceHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -329,7 +400,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListShelfPriceHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof listShelfPriceHistory>>>
@@ -351,13 +422,79 @@ export type ListShelfPriceHistoryQueryError = Error | HTTPValidationError
  * @summary Export the history of regular shelf prices (Business)
  */
 export function useListShelfPriceHistory<TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(
- params?: ListShelfPriceHistoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListShelfPriceHistoryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listShelfPriceHistory>>,
+          TError,
+          Awaited<ReturnType<typeof listShelfPriceHistory>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every move of a regular (non-promotional) price we observed, per SKU, since we started following that chain: the first chains in September 2026. Use it to backfill the months before your own integration started, then keep it current with `since`.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **What a row says.** From `observed_at` on, this SKU cost `price` at this retailer. The first row of a SKU has `previous_price: null`: that is when we started watching it, not a price change. Every later row is a move from `previous_price` to `price`, or a change of pack size at the same price: then `price` equals `previous_price` and `quantity` is the new size. `observed_at` is the night we first saw the price; the retailer may have changed it up to a day earlier.
+ *
+ * **Filters.** `retailer`, `shelf_id` (needs `retailer`), `ean` and `since` (inclusive, ISO 8601). Without filters you page through the whole archive of this storefront.
+ *
+ * **Order and paging.** Oldest first, then by `retailer` and `shelf_id`: the order is total, so `page`/`page_size` (up to 500) returns every row once. To stay current, call again with `since` set to the last `observed_at` you hold and drop rows you already have; the key of a row is `(retailer, shelf_id, observed_at)`. New rows arrive nightly, roughly 01:00-03:00 Dutch time.
+ *
+ * **Coverage.** The chains that publish regular prices; Lidl does not, so it has no history. Responses are cached for up to an hour.
+ * @summary Export the history of regular shelf prices (Business)
+ */
+export function useListShelfPriceHistory<TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(
+ params?: ListShelfPriceHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listShelfPriceHistory>>,
+          TError,
+          Awaited<ReturnType<typeof listShelfPriceHistory>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every move of a regular (non-promotional) price we observed, per SKU, since we started following that chain: the first chains in September 2026. Use it to backfill the months before your own integration started, then keep it current with `since`.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **What a row says.** From `observed_at` on, this SKU cost `price` at this retailer. The first row of a SKU has `previous_price: null`: that is when we started watching it, not a price change. Every later row is a move from `previous_price` to `price`, or a change of pack size at the same price: then `price` equals `previous_price` and `quantity` is the new size. `observed_at` is the night we first saw the price; the retailer may have changed it up to a day earlier.
+ *
+ * **Filters.** `retailer`, `shelf_id` (needs `retailer`), `ean` and `since` (inclusive, ISO 8601). Without filters you page through the whole archive of this storefront.
+ *
+ * **Order and paging.** Oldest first, then by `retailer` and `shelf_id`: the order is total, so `page`/`page_size` (up to 500) returns every row once. To stay current, call again with `since` set to the last `observed_at` you hold and drop rows you already have; the key of a row is `(retailer, shelf_id, observed_at)`. New rows arrive nightly, roughly 01:00-03:00 Dutch time.
+ *
+ * **Coverage.** The chains that publish regular prices; Lidl does not, so it has no history. Responses are cached for up to an hour.
+ * @summary Export the history of regular shelf prices (Business)
+ */
+export function useListShelfPriceHistory<TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(
+ params?: ListShelfPriceHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every move of a regular (non-promotional) price we observed, per SKU, since we started following that chain: the first chains in September 2026. Use it to backfill the months before your own integration started, then keep it current with `since`.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **What a row says.** From `observed_at` on, this SKU cost `price` at this retailer. The first row of a SKU has `previous_price: null`: that is when we started watching it, not a price change. Every later row is a move from `previous_price` to `price`, or a change of pack size at the same price: then `price` equals `previous_price` and `quantity` is the new size. `observed_at` is the night we first saw the price; the retailer may have changed it up to a day earlier.
+ *
+ * **Filters.** `retailer`, `shelf_id` (needs `retailer`), `ean` and `since` (inclusive, ISO 8601). Without filters you page through the whole archive of this storefront.
+ *
+ * **Order and paging.** Oldest first, then by `retailer` and `shelf_id`: the order is total, so `page`/`page_size` (up to 500) returns every row once. To stay current, call again with `since` set to the last `observed_at` you hold and drop rows you already have; the key of a row is `(retailer, shelf_id, observed_at)`. New rows arrive nightly, roughly 01:00-03:00 Dutch time.
+ *
+ * **Coverage.** The chains that publish regular prices; Lidl does not, so it has no history. Responses are cached for up to an hour.
+ * @summary Export the history of regular shelf prices (Business)
+ */
+export function useListShelfPriceHistory<TData = Awaited<ReturnType<typeof listShelfPriceHistory>>, TError = Error | HTTPValidationError>(
+ params?: ListShelfPriceHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listShelfPriceHistory>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListShelfPriceHistoryQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

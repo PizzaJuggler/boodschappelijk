@@ -7,7 +7,8 @@ export default defineConfig({
       target: 'api/price-prophet/price-prophet.ts',
       schemas: 'api/price-prophet/model',
       client: 'react-query',
-      mock: true
+      mock: true,
+      baseUrl: '/price-prophet'
     },
     input: {
       target: 'api/price-prophet/openapi.en.json'

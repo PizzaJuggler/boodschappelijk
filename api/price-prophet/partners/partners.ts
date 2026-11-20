@@ -34,9 +34,14 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -129,7 +134,7 @@ export const getRequestFreeKeyUrl = () => {
 
 
 
-  return `/api/v1/partner/signup`
+  return `/price-prophet/api/v1/partner/signup`
 }
 
 /**
@@ -208,13 +213,13 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
  */
 export const useRequestFreeKey = <TError = Error | HTTPValidationError,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestFreeKey>>, TError,RequestFreeKeyMutationVariables, TContext>, fetch?: RequestInit}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof requestFreeKey>>,
         TError,
         RequestFreeKeyMutationVariables,
         TContext
       > => {
-      return useMutation(getRequestFreeKeyMutationOptions(options));
+      return useMutation(getRequestFreeKeyMutationOptions(options), queryClient);
     }
     export type getPartnerUsageResponse200 = {
   data: PartnerUsage
@@ -255,7 +260,7 @@ export const getGetPartnerUsageUrl = () => {
 
 
 
-  return `/api/v1/partner/usage`
+  return `/price-prophet/api/v1/partner/usage`
 }
 
 /**
@@ -297,12 +302,12 @@ export const getPartnerUsage = async ( options?: RequestInit): Promise<getPartne
 
 export const getGetPartnerUsageQueryKey = () => {
     return [
-    `/api/v1/partner/usage`
+    `/price-prophet/api/v1/partner/usage`
     ] as const;
     }
 
 
-export const getGetPartnerUsageQueryOptions = <TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>, fetch?: RequestInit}
+export const getGetPartnerUsageQueryOptions = <TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -317,7 +322,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetPartnerUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getPartnerUsage>>>
@@ -340,13 +345,82 @@ export type GetPartnerUsageQueryError = Error
  * @summary Partner Usage
  */
 export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPartnerUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getPartnerUsage>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Partner checks their own API usage.
+ *
+ * Requires a valid partner API key in the X-API-Key header.
+ * Returns current rate limit usage, account info and `daily_usage`: requests
+ * per Dutch calendar day over the last 30 days (oldest first), split by
+ * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
+ * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
+ * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
+ * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
+ * now, never an empty history.
+ *
+ * `plan` is the plan that is enforced: an expired trial reads `free`.
+ * @summary Partner Usage
+ */
+export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPartnerUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getPartnerUsage>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Partner checks their own API usage.
+ *
+ * Requires a valid partner API key in the X-API-Key header.
+ * Returns current rate limit usage, account info and `daily_usage`: requests
+ * per Dutch calendar day over the last 30 days (oldest first), split by
+ * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
+ * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
+ * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
+ * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
+ * now, never an empty history.
+ *
+ * `plan` is the plan that is enforced: an expired trial reads `free`.
+ * @summary Partner Usage
+ */
+export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Partner checks their own API usage.
+ *
+ * Requires a valid partner API key in the X-API-Key header.
+ * Returns current rate limit usage, account info and `daily_usage`: requests
+ * per Dutch calendar day over the last 30 days (oldest first), split by
+ * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
+ * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
+ * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
+ * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
+ * now, never an empty history.
+ *
+ * `plan` is the plan that is enforced: an expired trial reads `free`.
+ * @summary Partner Usage
+ */
+export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetPartnerUsageQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

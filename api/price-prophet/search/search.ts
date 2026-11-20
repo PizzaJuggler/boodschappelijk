@@ -33,8 +33,13 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -114,7 +119,7 @@ export const getSearchProductsUrl = (params?: SearchProductsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/search?${stringifiedParams}` : `/api/v1/search`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/search?${stringifiedParams}` : `/price-prophet/api/v1/search`
 }
 
 /**
@@ -165,12 +170,12 @@ export const searchProducts = async (params?: SearchProductsParams, options?: Re
 
 export const getSearchProductsQueryKey = (params?: SearchProductsParams,) => {
     return [
-    `/api/v1/search`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/search`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getSearchProductsQueryOptions = <TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(params?: SearchProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>, fetch?: RequestInit}
+export const getSearchProductsQueryOptions = <TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(params?: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -185,7 +190,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchProductsQueryResult = NonNullable<Awaited<ReturnType<typeof searchProducts>>>
@@ -217,13 +222,109 @@ export type SearchProductsQueryError = Error | HTTPValidationError
  * @summary Search Products
  */
 export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(
- params?: SearchProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  SearchProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProducts>>,
+          TError,
+          Awaited<ReturnType<typeof searchProducts>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products using Elasticsearch with fuzzy matching.
+ *
+ * All products are promotions (scraped from promotion pages).
+ *
+ * Features:
+ * - Fuzzy search (handles typos)
+ * - Dutch language analysis
+ * - Relevance scoring
+ * - Fast performance
+ * - Filter by promotion status (active/upcoming/expired)
+ * - Filter by promotion type (percentage, multi_buy, one_plus_one, etc.)
+ * - Filter by minimum savings percentage
+ * - Sort by savings, unit price, or regular price
+ * - Filter by unified category
+ * - Filter by dietary tags (bio, glutenvrij, lactosevrij, vegan)
+ * - Filter by house brand vs A-merk (private_label)
+ *
+ * Example: `/api/v1/search?q=kaas&category=zuivel-eieren&promotion_status=active`
+ * Example: `/api/v1/search?q=*&promotion_type=multi_buy&min_savings=20&sort_by=savings_percentage:desc`
+ * Example: `/api/v1/search?q=melk&dietary=vegan,lactosevrij`
+ * Example: `/api/v1/search?q=*&category=zuivel-eieren&private_label=true`
+ * @summary Search Products
+ */
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(
+ params?: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProducts>>,
+          TError,
+          Awaited<ReturnType<typeof searchProducts>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products using Elasticsearch with fuzzy matching.
+ *
+ * All products are promotions (scraped from promotion pages).
+ *
+ * Features:
+ * - Fuzzy search (handles typos)
+ * - Dutch language analysis
+ * - Relevance scoring
+ * - Fast performance
+ * - Filter by promotion status (active/upcoming/expired)
+ * - Filter by promotion type (percentage, multi_buy, one_plus_one, etc.)
+ * - Filter by minimum savings percentage
+ * - Sort by savings, unit price, or regular price
+ * - Filter by unified category
+ * - Filter by dietary tags (bio, glutenvrij, lactosevrij, vegan)
+ * - Filter by house brand vs A-merk (private_label)
+ *
+ * Example: `/api/v1/search?q=kaas&category=zuivel-eieren&promotion_status=active`
+ * Example: `/api/v1/search?q=*&promotion_type=multi_buy&min_savings=20&sort_by=savings_percentage:desc`
+ * Example: `/api/v1/search?q=melk&dietary=vegan,lactosevrij`
+ * Example: `/api/v1/search?q=*&category=zuivel-eieren&private_label=true`
+ * @summary Search Products
+ */
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(
+ params?: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products using Elasticsearch with fuzzy matching.
+ *
+ * All products are promotions (scraped from promotion pages).
+ *
+ * Features:
+ * - Fuzzy search (handles typos)
+ * - Dutch language analysis
+ * - Relevance scoring
+ * - Fast performance
+ * - Filter by promotion status (active/upcoming/expired)
+ * - Filter by promotion type (percentage, multi_buy, one_plus_one, etc.)
+ * - Filter by minimum savings percentage
+ * - Sort by savings, unit price, or regular price
+ * - Filter by unified category
+ * - Filter by dietary tags (bio, glutenvrij, lactosevrij, vegan)
+ * - Filter by house brand vs A-merk (private_label)
+ *
+ * Example: `/api/v1/search?q=kaas&category=zuivel-eieren&promotion_status=active`
+ * Example: `/api/v1/search?q=*&promotion_type=multi_buy&min_savings=20&sort_by=savings_percentage:desc`
+ * Example: `/api/v1/search?q=melk&dietary=vegan,lactosevrij`
+ * Example: `/api/v1/search?q=*&category=zuivel-eieren&private_label=true`
+ * @summary Search Products
+ */
+export function useSearchProducts<TData = Awaited<ReturnType<typeof searchProducts>>, TError = Error | HTTPValidationError>(
+ params?: SearchProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProducts>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getSearchProductsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -267,7 +368,7 @@ export const getListCategoriesUrl = () => {
 
 
 
-  return `/api/v1/categories`
+  return `/price-prophet/api/v1/categories`
 }
 
 /**
@@ -303,12 +404,12 @@ export const listCategories = async ( options?: RequestInit): Promise<listCatego
 
 export const getListCategoriesQueryKey = () => {
     return [
-    `/api/v1/categories`
+    `/price-prophet/api/v1/categories`
     ] as const;
     }
 
 
-export const getListCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, fetch?: RequestInit}
+export const getListCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -323,7 +424,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listCategories>>>
@@ -340,13 +441,64 @@ export type ListCategoriesQueryError = Error
  * @summary Get Categories
  */
 export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCategories>>,
+          TError,
+          Awaited<ReturnType<typeof listCategories>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all available product categories with product counts.
+ *
+ * Returns unified category slugs, Dutch display names, product counts, and group.
+ * Use the slug value with the `category` parameter in /search.
+ *
+ * Example: `/api/v1/categories`
+ * @summary Get Categories
+ */
+export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCategories>>,
+          TError,
+          Awaited<ReturnType<typeof listCategories>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all available product categories with product counts.
+ *
+ * Returns unified category slugs, Dutch display names, product counts, and group.
+ * Use the slug value with the `category` parameter in /search.
+ *
+ * Example: `/api/v1/categories`
+ * @summary Get Categories
+ */
+export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all available product categories with product counts.
+ *
+ * Returns unified category slugs, Dutch display names, product counts, and group.
+ * Use the slug value with the `category` parameter in /search.
+ *
+ * Example: `/api/v1/categories`
+ * @summary Get Categories
+ */
+export function useListCategories<TData = Awaited<ReturnType<typeof listCategories>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategories>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListCategoriesQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -402,7 +554,7 @@ export const getGetFilterStatsUrl = (params?: GetFilterStatsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/filter-stats?${stringifiedParams}` : `/api/v1/filter-stats`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/filter-stats?${stringifiedParams}` : `/price-prophet/api/v1/filter-stats`
 }
 
 /**
@@ -439,12 +591,12 @@ export const getFilterStats = async (params?: GetFilterStatsParams, options?: Re
 
 export const getGetFilterStatsQueryKey = (params?: GetFilterStatsParams,) => {
     return [
-    `/api/v1/filter-stats`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/filter-stats`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetFilterStatsQueryOptions = <TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(params?: GetFilterStatsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>, fetch?: RequestInit}
+export const getGetFilterStatsQueryOptions = <TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(params?: GetFilterStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -459,7 +611,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetFilterStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getFilterStats>>>
@@ -477,13 +629,67 @@ export type GetFilterStatsQueryError = Error | HTTPValidationError
  * @summary Get Filter Stats
  */
 export function useGetFilterStats<TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(
- params?: GetFilterStatsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  GetFilterStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFilterStats>>,
+          TError,
+          Awaited<ReturnType<typeof getFilterStats>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get counts for filter dropdowns (faceted search).
+ *
+ * Returns counts for each retailer, promotion status, and category.
+ * When a search query is provided, counts reflect matching products only.
+ * Used to display dynamic counts in filter dropdowns.
+ *
+ * Example: `/api/v1/filter-stats?q=spinazie&category=groente-fruit`
+ * @summary Get Filter Stats
+ */
+export function useGetFilterStats<TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(
+ params?: GetFilterStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFilterStats>>,
+          TError,
+          Awaited<ReturnType<typeof getFilterStats>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get counts for filter dropdowns (faceted search).
+ *
+ * Returns counts for each retailer, promotion status, and category.
+ * When a search query is provided, counts reflect matching products only.
+ * Used to display dynamic counts in filter dropdowns.
+ *
+ * Example: `/api/v1/filter-stats?q=spinazie&category=groente-fruit`
+ * @summary Get Filter Stats
+ */
+export function useGetFilterStats<TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(
+ params?: GetFilterStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get counts for filter dropdowns (faceted search).
+ *
+ * Returns counts for each retailer, promotion status, and category.
+ * When a search query is provided, counts reflect matching products only.
+ * Used to display dynamic counts in filter dropdowns.
+ *
+ * Example: `/api/v1/filter-stats?q=spinazie&category=groente-fruit`
+ * @summary Get Filter Stats
+ */
+export function useGetFilterStats<TData = Awaited<ReturnType<typeof getFilterStats>>, TError = Error | HTTPValidationError>(
+ params?: GetFilterStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilterStats>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetFilterStatsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

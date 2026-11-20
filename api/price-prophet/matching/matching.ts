@@ -34,9 +34,14 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -147,7 +152,7 @@ export const getMatchByEanUrl = (ean: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/match/ean/${ean}?${stringifiedParams}` : `/api/v1/match/ean/${ean}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/match/ean/${ean}?${stringifiedParams}` : `/price-prophet/api/v1/match/ean/${ean}`
 }
 
 /**
@@ -180,13 +185,13 @@ export const matchByEan = async (ean: string,
 export const getMatchByEanQueryKey = (ean: string,
     params?: MatchByEanParams,) => {
     return [
-    `/api/v1/match/ean/${ean}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/match/ean/${ean}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getMatchByEanQueryOptions = <TData = Awaited<ReturnType<typeof matchByEan>>, TError = Error | HTTPValidationError>(ean: string,
-    params?: MatchByEanParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>, fetch?: RequestInit}
+    params?: MatchByEanParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -201,7 +206,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: ean !== null && ean !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: ean !== null && ean !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type MatchByEanQueryResult = NonNullable<Awaited<ReturnType<typeof matchByEan>>>
@@ -214,13 +219,52 @@ export type MatchByEanQueryError = Error | HTTPValidationError
  */
 export function useMatchByEan<TData = Awaited<ReturnType<typeof matchByEan>>, TError = Error | HTTPValidationError>(
  ean: string,
-    params?: MatchByEanParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  MatchByEanParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof matchByEan>>,
+          TError,
+          Awaited<ReturnType<typeof matchByEan>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find products with the same EAN barcode at different retailers. **A GTIN does not identify a pack size**, and this endpoint is deliberately ungated — it has to answer "everything carrying this barcode". A chain files the single, the multipack and the tray under one EAN: 5000112658620 carries an Albert Heijn can at EUR 0.85, its 8-pack at EUR 5.19 and its 20-pack at EUR 13.19. So a min(price) over the rows can return the price of a different product. Gate on the `quantity` field, which is on every match, or call /match/product/{product_id}, which applies that gate for you. **`product_id` is `null` on a `shelf` row unless /products/{id} can actually answer it.** A shelf row is keyed on the retailer's own SKU, and that SKU often has no live product — it may never have been on promotion, or only in the past, and this endpoint serves live products only. Rather than hand you an id that 404s, the field is empty. The price, `ean`, `quantity` and `url` are still there: key on `ean`, which is also the key that works across retailers. **`promotion_status` can be `active`, `upcoming`, `shelf` or `historical`.** `shelf` is a retailer's current regular price; `historical` is the most recent price we observed there in the last 60 days when nothing more current is known — treat both as "what you'd pay there roughly now", not as a live promo. **`last_deal_price`/`last_deal_until` are the most recent promotion we saw for that retailer and pack in the last 60 days**, on a `shelf` or `historical` row: the promo price and its last day, next to the regular price in `price`. They are `null` when there was no such promotion, and always `null` for a retailer that publishes no strikethrough price on its promotions (e.g. Aldi, Lidl), because without one we cannot tell a promotion from a regular price.
+ * @summary Find products by EAN across retailers
+ */
+export function useMatchByEan<TData = Awaited<ReturnType<typeof matchByEan>>, TError = Error | HTTPValidationError>(
+ ean: string,
+    params?: MatchByEanParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof matchByEan>>,
+          TError,
+          Awaited<ReturnType<typeof matchByEan>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find products with the same EAN barcode at different retailers. **A GTIN does not identify a pack size**, and this endpoint is deliberately ungated — it has to answer "everything carrying this barcode". A chain files the single, the multipack and the tray under one EAN: 5000112658620 carries an Albert Heijn can at EUR 0.85, its 8-pack at EUR 5.19 and its 20-pack at EUR 13.19. So a min(price) over the rows can return the price of a different product. Gate on the `quantity` field, which is on every match, or call /match/product/{product_id}, which applies that gate for you. **`product_id` is `null` on a `shelf` row unless /products/{id} can actually answer it.** A shelf row is keyed on the retailer's own SKU, and that SKU often has no live product — it may never have been on promotion, or only in the past, and this endpoint serves live products only. Rather than hand you an id that 404s, the field is empty. The price, `ean`, `quantity` and `url` are still there: key on `ean`, which is also the key that works across retailers. **`promotion_status` can be `active`, `upcoming`, `shelf` or `historical`.** `shelf` is a retailer's current regular price; `historical` is the most recent price we observed there in the last 60 days when nothing more current is known — treat both as "what you'd pay there roughly now", not as a live promo. **`last_deal_price`/`last_deal_until` are the most recent promotion we saw for that retailer and pack in the last 60 days**, on a `shelf` or `historical` row: the promo price and its last day, next to the regular price in `price`. They are `null` when there was no such promotion, and always `null` for a retailer that publishes no strikethrough price on its promotions (e.g. Aldi, Lidl), because without one we cannot tell a promotion from a regular price.
+ * @summary Find products by EAN across retailers
+ */
+export function useMatchByEan<TData = Awaited<ReturnType<typeof matchByEan>>, TError = Error | HTTPValidationError>(
+ ean: string,
+    params?: MatchByEanParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find products with the same EAN barcode at different retailers. **A GTIN does not identify a pack size**, and this endpoint is deliberately ungated — it has to answer "everything carrying this barcode". A chain files the single, the multipack and the tray under one EAN: 5000112658620 carries an Albert Heijn can at EUR 0.85, its 8-pack at EUR 5.19 and its 20-pack at EUR 13.19. So a min(price) over the rows can return the price of a different product. Gate on the `quantity` field, which is on every match, or call /match/product/{product_id}, which applies that gate for you. **`product_id` is `null` on a `shelf` row unless /products/{id} can actually answer it.** A shelf row is keyed on the retailer's own SKU, and that SKU often has no live product — it may never have been on promotion, or only in the past, and this endpoint serves live products only. Rather than hand you an id that 404s, the field is empty. The price, `ean`, `quantity` and `url` are still there: key on `ean`, which is also the key that works across retailers. **`promotion_status` can be `active`, `upcoming`, `shelf` or `historical`.** `shelf` is a retailer's current regular price; `historical` is the most recent price we observed there in the last 60 days when nothing more current is known — treat both as "what you'd pay there roughly now", not as a live promo. **`last_deal_price`/`last_deal_until` are the most recent promotion we saw for that retailer and pack in the last 60 days**, on a `shelf` or `historical` row: the promo price and its last day, next to the regular price in `price`. They are `null` when there was no such promotion, and always `null` for a retailer that publishes no strikethrough price on its promotions (e.g. Aldi, Lidl), because without one we cannot tell a promotion from a regular price.
+ * @summary Find products by EAN across retailers
+ */
+export function useMatchByEan<TData = Awaited<ReturnType<typeof matchByEan>>, TError = Error | HTTPValidationError>(
+ ean: string,
+    params?: MatchByEanParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByEan>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getMatchByEanQueryOptions(ean,params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -282,7 +326,7 @@ export const getMatchByProductUrl = (productId: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/match/product/${productId}?${stringifiedParams}` : `/api/v1/match/product/${productId}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/match/product/${productId}?${stringifiedParams}` : `/price-prophet/api/v1/match/product/${productId}`
 }
 
 /**
@@ -317,13 +361,13 @@ export const matchByProduct = async (productId: string,
 export const getMatchByProductQueryKey = (productId: string,
     params?: MatchByProductParams,) => {
     return [
-    `/api/v1/match/product/${productId}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/match/product/${productId}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getMatchByProductQueryOptions = <TData = Awaited<ReturnType<typeof matchByProduct>>, TError = Error | HTTPValidationError>(productId: string,
-    params?: MatchByProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>, fetch?: RequestInit}
+    params?: MatchByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -338,7 +382,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type MatchByProductQueryResult = NonNullable<Awaited<ReturnType<typeof matchByProduct>>>
@@ -353,13 +397,58 @@ export type MatchByProductQueryError = Error | HTTPValidationError
  */
 export function useMatchByProduct<TData = Awaited<ReturnType<typeof matchByProduct>>, TError = Error | HTTPValidationError>(
  productId: string,
-    params?: MatchByProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  MatchByProductParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof matchByProduct>>,
+          TError,
+          Awaited<ReturnType<typeof matchByProduct>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find the same product at other retailers: the comparison our own product pages show. Exact EAN matches first; then, for chains still open, approximations marked `approx: true` -- name and pack size at chains that publish no barcode (Aldi shelf prices), another chain's own house brand under the same name and pack (`private_label_equivalent: true`), and brand, name and pack for a product without a barcode. Below three barcode matches a name search fills chains without one; those rows are approximations too, so a chain can carry two of them. Measured precision per picked row: 89% (name), 92% (brand and name), 99% (house brand); the name search is the weakest of the four. To keep barcode matches only, filter on `match_level == "exact_ean"`, which is the same set as `approx == false`.
+ *
+ * **Cheaper house brand.** With `include_substitutes=true` the response also carries `substitutes`: house brands under the same name and pack size that cost less than this A-brand promotion. They are a different product and never appear in `matches`. Measured on hand-labelled pairs: 38 of 38 judged a useful alternative.
+ * @summary Find matching products at other retailers
+ */
+export function useMatchByProduct<TData = Awaited<ReturnType<typeof matchByProduct>>, TError = Error | HTTPValidationError>(
+ productId: string,
+    params?: MatchByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof matchByProduct>>,
+          TError,
+          Awaited<ReturnType<typeof matchByProduct>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find the same product at other retailers: the comparison our own product pages show. Exact EAN matches first; then, for chains still open, approximations marked `approx: true` -- name and pack size at chains that publish no barcode (Aldi shelf prices), another chain's own house brand under the same name and pack (`private_label_equivalent: true`), and brand, name and pack for a product without a barcode. Below three barcode matches a name search fills chains without one; those rows are approximations too, so a chain can carry two of them. Measured precision per picked row: 89% (name), 92% (brand and name), 99% (house brand); the name search is the weakest of the four. To keep barcode matches only, filter on `match_level == "exact_ean"`, which is the same set as `approx == false`.
+ *
+ * **Cheaper house brand.** With `include_substitutes=true` the response also carries `substitutes`: house brands under the same name and pack size that cost less than this A-brand promotion. They are a different product and never appear in `matches`. Measured on hand-labelled pairs: 38 of 38 judged a useful alternative.
+ * @summary Find matching products at other retailers
+ */
+export function useMatchByProduct<TData = Awaited<ReturnType<typeof matchByProduct>>, TError = Error | HTTPValidationError>(
+ productId: string,
+    params?: MatchByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Find the same product at other retailers: the comparison our own product pages show. Exact EAN matches first; then, for chains still open, approximations marked `approx: true` -- name and pack size at chains that publish no barcode (Aldi shelf prices), another chain's own house brand under the same name and pack (`private_label_equivalent: true`), and brand, name and pack for a product without a barcode. Below three barcode matches a name search fills chains without one; those rows are approximations too, so a chain can carry two of them. Measured precision per picked row: 89% (name), 92% (brand and name), 99% (house brand); the name search is the weakest of the four. To keep barcode matches only, filter on `match_level == "exact_ean"`, which is the same set as `approx == false`.
+ *
+ * **Cheaper house brand.** With `include_substitutes=true` the response also carries `substitutes`: house brands under the same name and pack size that cost less than this A-brand promotion. They are a different product and never appear in `matches`. Measured on hand-labelled pairs: 38 of 38 judged a useful alternative.
+ * @summary Find matching products at other retailers
+ */
+export function useMatchByProduct<TData = Awaited<ReturnType<typeof matchByProduct>>, TError = Error | HTTPValidationError>(
+ productId: string,
+    params?: MatchByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof matchByProduct>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getMatchByProductQueryOptions(productId,params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -413,7 +502,7 @@ export const getComparePricesUrl = (ean: string,) => {
 
 
 
-  return `/api/v1/match/compare/${ean}`
+  return `/price-prophet/api/v1/match/compare/${ean}`
 }
 
 /**
@@ -444,12 +533,12 @@ export const comparePrices = async (ean: string, options?: RequestInit): Promise
 
 export const getComparePricesQueryKey = (ean: string,) => {
     return [
-    `/api/v1/match/compare/${ean}`
+    `/price-prophet/api/v1/match/compare/${ean}`
     ] as const;
     }
 
 
-export const getComparePricesQueryOptions = <TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(ean: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>, fetch?: RequestInit}
+export const getComparePricesQueryOptions = <TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(ean: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -464,7 +553,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: ean !== null && ean !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: ean !== null && ean !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ComparePricesQueryResult = NonNullable<Awaited<ReturnType<typeof comparePrices>>>
@@ -476,13 +565,49 @@ export type ComparePricesQueryError = Error | HTTPValidationError
  * @summary Compare prices for a product across retailers
  */
 export function useComparePrices<TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(
- ean: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ ean: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof comparePrices>>,
+          TError,
+          Awaited<ReturnType<typeof comparePrices>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price comparison with best deal and savings information.
+ * @summary Compare prices for a product across retailers
+ */
+export function useComparePrices<TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(
+ ean: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof comparePrices>>,
+          TError,
+          Awaited<ReturnType<typeof comparePrices>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price comparison with best deal and savings information.
+ * @summary Compare prices for a product across retailers
+ */
+export function useComparePrices<TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(
+ ean: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price comparison with best deal and savings information.
+ * @summary Compare prices for a product across retailers
+ */
+export function useComparePrices<TData = Awaited<ReturnType<typeof comparePrices>>, TError = Error | HTTPValidationError>(
+ ean: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePrices>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getComparePricesQueryOptions(ean,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -531,7 +656,7 @@ export const getGetEanCoverageUrl = () => {
 
 
 
-  return `/api/v1/match/stats`
+  return `/price-prophet/api/v1/match/stats`
 }
 
 /**
@@ -562,12 +687,12 @@ export const getEanCoverage = async ( options?: RequestInit): Promise<getEanCove
 
 export const getGetEanCoverageQueryKey = () => {
     return [
-    `/api/v1/match/stats`
+    `/price-prophet/api/v1/match/stats`
     ] as const;
     }
 
 
-export const getGetEanCoverageQueryOptions = <TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>, fetch?: RequestInit}
+export const getGetEanCoverageQueryOptions = <TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -582,7 +707,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetEanCoverageQueryResult = NonNullable<Awaited<ReturnType<typeof getEanCoverage>>>
@@ -594,13 +719,49 @@ export type GetEanCoverageQueryError = Error
  * @summary Get EAN coverage statistics
  */
 export function useGetEanCoverage<TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEanCoverage>>,
+          TError,
+          Awaited<ReturnType<typeof getEanCoverage>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get statistics on EAN availability across retailers.
+ * @summary Get EAN coverage statistics
+ */
+export function useGetEanCoverage<TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEanCoverage>>,
+          TError,
+          Awaited<ReturnType<typeof getEanCoverage>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get statistics on EAN availability across retailers.
+ * @summary Get EAN coverage statistics
+ */
+export function useGetEanCoverage<TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get statistics on EAN availability across retailers.
+ * @summary Get EAN coverage statistics
+ */
+export function useGetEanCoverage<TData = Awaited<ReturnType<typeof getEanCoverage>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEanCoverage>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetEanCoverageQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -654,7 +815,7 @@ export const getMatchIngredientsUrl = () => {
 
 
 
-  return `/api/v1/match/ingredients`
+  return `/price-prophet/api/v1/match/ingredients`
 }
 
 /**
@@ -729,11 +890,11 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
  */
 export const useMatchIngredients = <TError = Error | HTTPValidationError,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof matchIngredients>>, TError,MatchIngredientsMutationVariables, TContext>, fetch?: RequestInit}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof matchIngredients>>,
         TError,
         MatchIngredientsMutationVariables,
         TContext
       > => {
-      return useMutation(getMatchIngredientsMutationOptions(options));
+      return useMutation(getMatchIngredientsMutationOptions(options), queryClient);
     }

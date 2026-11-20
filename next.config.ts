@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
       }
     ]
   },
+  rewrites: () => [
+    {
+      source: "/price-prophet/:path*",
+      destination: "https://www.prijsprofeet.nl/:path*"
+    }
+  ],
   redirects: () => ([
     {
       source: '/',

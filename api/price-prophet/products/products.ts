@@ -33,8 +33,13 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -120,7 +125,7 @@ export const getListProductsUrl = (params?: ListProductsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products?${stringifiedParams}` : `/api/v1/products`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products?${stringifiedParams}` : `/price-prophet/api/v1/products`
 }
 
 /**
@@ -164,12 +169,12 @@ export const listProducts = async (params?: ListProductsParams, options?: Reques
 
 export const getListProductsQueryKey = (params?: ListProductsParams,) => {
     return [
-    `/api/v1/products`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListProductsQueryOptions = <TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(params?: ListProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>, fetch?: RequestInit}
+export const getListProductsQueryOptions = <TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(params?: ListProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -184,7 +189,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
@@ -209,13 +214,88 @@ export type ListProductsQueryError = Error | HTTPValidationError
  * @summary List Products
  */
 export function useListProducts<TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(
- params?: ListProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProducts>>,
+          TError,
+          Awaited<ReturnType<typeof listProducts>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * List all products with optional filters and pagination.
+ *
+ * - **retailer**: Filter by retailer name
+ * - **folder_id**: Filter by folder ID
+ * - **is_promotional**: Filter promotional products only
+ * - **min_price**: Minimum price (inclusive)
+ * - **max_price**: Maximum price (inclusive)
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **promo_group_id**: Only the products taking part in this joint promotion
+ * - **sort_by**: Sort field (extracted_at, price, name, product_id, valid_from)
+ * - **sort_order**: Sort order (asc or desc)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary List Products
+ */
+export function useListProducts<TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(
+ params?: ListProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProducts>>,
+          TError,
+          Awaited<ReturnType<typeof listProducts>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * List all products with optional filters and pagination.
+ *
+ * - **retailer**: Filter by retailer name
+ * - **folder_id**: Filter by folder ID
+ * - **is_promotional**: Filter promotional products only
+ * - **min_price**: Minimum price (inclusive)
+ * - **max_price**: Maximum price (inclusive)
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **promo_group_id**: Only the products taking part in this joint promotion
+ * - **sort_by**: Sort field (extracted_at, price, name, product_id, valid_from)
+ * - **sort_order**: Sort order (asc or desc)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary List Products
+ */
+export function useListProducts<TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(
+ params?: ListProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * List all products with optional filters and pagination.
+ *
+ * - **retailer**: Filter by retailer name
+ * - **folder_id**: Filter by folder ID
+ * - **is_promotional**: Filter promotional products only
+ * - **min_price**: Minimum price (inclusive)
+ * - **max_price**: Maximum price (inclusive)
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **promo_group_id**: Only the products taking part in this joint promotion
+ * - **sort_by**: Sort field (extracted_at, price, name, product_id, valid_from)
+ * - **sort_order**: Sort order (asc or desc)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary List Products
+ */
+export function useListProducts<TData = Awaited<ReturnType<typeof listProducts>>, TError = Error | HTTPValidationError>(
+ params?: ListProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListProductsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -271,7 +351,7 @@ export const getListProductChangesUrl = (params?: ListProductChangesParams,) => 
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products/changes?${stringifiedParams}` : `/api/v1/products/changes`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products/changes?${stringifiedParams}` : `/price-prophet/api/v1/products/changes`
 }
 
 /**
@@ -318,12 +398,12 @@ export const listProductChanges = async (params?: ListProductChangesParams, opti
 
 export const getListProductChangesQueryKey = (params?: ListProductChangesParams,) => {
     return [
-    `/api/v1/products/changes`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products/changes`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListProductChangesQueryOptions = <TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(params?: ListProductChangesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>, fetch?: RequestInit}
+export const getListProductChangesQueryOptions = <TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(params?: ListProductChangesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -338,7 +418,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListProductChangesQueryResult = NonNullable<Awaited<ReturnType<typeof listProductChanges>>>
@@ -366,13 +446,97 @@ export type ListProductChangesQueryError = Error | HTTPValidationError
  * @summary List Product Changes
  */
 export function useListProductChanges<TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(
- params?: ListProductChangesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListProductChangesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductChanges>>,
+          TError,
+          Awaited<ReturnType<typeof listProductChanges>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * What changed in `/api/v1/products` since your previous sync.
+ *
+ * Instead of paging through every promotion each night, sync once and then
+ * follow this feed:
+ *
+ * 1. Call without `cursor` and keep the `cursor` it returns.
+ * 2. Do one full sync through `/api/v1/products`.
+ * 3. From then on, call with your saved `cursor`. Apply each change in
+ *    order: `upsert` replaces the row with that `product_id`, `delete`
+ *    removes it. Save the new `cursor`, and call again right away while
+ *    `has_more` is true.
+ *
+ * A change reaches the feed within about ten minutes (`as_of` says when the
+ * catalogue was last compared). Changes are kept for 30 days: an older
+ * cursor gets a **410**, and then you do a full sync again and start over
+ * from step 1. The same product can appear more than once; the last change
+ * wins. Scoped to the storefront you call, like every other endpoint.
+ * @summary List Product Changes
+ */
+export function useListProductChanges<TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(
+ params?: ListProductChangesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductChanges>>,
+          TError,
+          Awaited<ReturnType<typeof listProductChanges>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * What changed in `/api/v1/products` since your previous sync.
+ *
+ * Instead of paging through every promotion each night, sync once and then
+ * follow this feed:
+ *
+ * 1. Call without `cursor` and keep the `cursor` it returns.
+ * 2. Do one full sync through `/api/v1/products`.
+ * 3. From then on, call with your saved `cursor`. Apply each change in
+ *    order: `upsert` replaces the row with that `product_id`, `delete`
+ *    removes it. Save the new `cursor`, and call again right away while
+ *    `has_more` is true.
+ *
+ * A change reaches the feed within about ten minutes (`as_of` says when the
+ * catalogue was last compared). Changes are kept for 30 days: an older
+ * cursor gets a **410**, and then you do a full sync again and start over
+ * from step 1. The same product can appear more than once; the last change
+ * wins. Scoped to the storefront you call, like every other endpoint.
+ * @summary List Product Changes
+ */
+export function useListProductChanges<TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(
+ params?: ListProductChangesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * What changed in `/api/v1/products` since your previous sync.
+ *
+ * Instead of paging through every promotion each night, sync once and then
+ * follow this feed:
+ *
+ * 1. Call without `cursor` and keep the `cursor` it returns.
+ * 2. Do one full sync through `/api/v1/products`.
+ * 3. From then on, call with your saved `cursor`. Apply each change in
+ *    order: `upsert` replaces the row with that `product_id`, `delete`
+ *    removes it. Save the new `cursor`, and call again right away while
+ *    `has_more` is true.
+ *
+ * A change reaches the feed within about ten minutes (`as_of` says when the
+ * catalogue was last compared). Changes are kept for 30 days: an older
+ * cursor gets a **410**, and then you do a full sync again and start over
+ * from step 1. The same product can appear more than once; the last change
+ * wins. Scoped to the storefront you call, like every other endpoint.
+ * @summary List Product Changes
+ */
+export function useListProductChanges<TData = Awaited<ReturnType<typeof listProductChanges>>, TError = Error | HTTPValidationError>(
+ params?: ListProductChangesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductChanges>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListProductChangesQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -421,7 +585,7 @@ export const getGetProductUrl = (productId: string,) => {
 
 
 
-  return `/api/v1/products/${productId}`
+  return `/price-prophet/api/v1/products/${productId}`
 }
 
 /**
@@ -458,12 +622,12 @@ export const getProduct = async (productId: string, options?: RequestInit): Prom
 
 export const getGetProductQueryKey = (productId: string,) => {
     return [
-    `/api/v1/products/${productId}`
+    `/price-prophet/api/v1/products/${productId}`
     ] as const;
     }
 
 
-export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, fetch?: RequestInit}
+export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -478,7 +642,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetProductQueryResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
@@ -496,13 +660,67 @@ export type GetProductQueryError = Error | HTTPValidationError
  * @summary Get Product
  */
 export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(
- productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ productId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProduct>>,
+          TError,
+          Awaited<ReturnType<typeof getProduct>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get a specific product by ID.
+ *
+ * - **product_id**: the `product_id` of a promotion, or the stable
+ *   `base_product_id` published on every product response. A `product_id`
+ *   embeds the promotion week, so a re-promoted article gets a new one every
+ *   week; the base id is the key to store and to deduplicate on. Passing a
+ *   base id returns the promotion that is running now.
+ * @summary Get Product
+ */
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProduct>>,
+          TError,
+          Awaited<ReturnType<typeof getProduct>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get a specific product by ID.
+ *
+ * - **product_id**: the `product_id` of a promotion, or the stable
+ *   `base_product_id` published on every product response. A `product_id`
+ *   embeds the promotion week, so a re-promoted article gets a new one every
+ *   week; the base id is the key to store and to deduplicate on. Passing a
+ *   base id returns the promotion that is running now.
+ * @summary Get Product
+ */
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get a specific product by ID.
+ *
+ * - **product_id**: the `product_id` of a promotion, or the stable
+ *   `base_product_id` published on every product response. A `product_id`
+ *   embeds the promotion week, so a re-promoted article gets a new one every
+ *   week; the base id is the key to store and to deduplicate on. Passing a
+ *   base id returns the promotion that is running now.
+ * @summary Get Product
+ */
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetProductQueryOptions(productId,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -556,7 +774,7 @@ export const getGetPriceHistoryUrl = (productId: string,) => {
 
 
 
-  return `/api/v1/products/${productId}/price-history`
+  return `/price-prophet/api/v1/products/${productId}/price-history`
 }
 
 /**
@@ -587,12 +805,12 @@ export const getPriceHistory = async (productId: string, options?: RequestInit):
 
 export const getGetPriceHistoryQueryKey = (productId: string,) => {
     return [
-    `/api/v1/products/${productId}/price-history`
+    `/price-prophet/api/v1/products/${productId}/price-history`
     ] as const;
     }
 
 
-export const getGetPriceHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>, fetch?: RequestInit}
+export const getGetPriceHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -607,7 +825,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetPriceHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getPriceHistory>>>
@@ -619,13 +837,49 @@ export type GetPriceHistoryQueryError = Error | HTTPValidationError
  * @summary Get Price History
  */
 export function useGetPriceHistory<TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(
- productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ productId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPriceHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getPriceHistory>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price history for a product from the price_history collection.
+ * @summary Get Price History
+ */
+export function useGetPriceHistory<TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPriceHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getPriceHistory>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price history for a product from the price_history collection.
+ * @summary Get Price History
+ */
+export function useGetPriceHistory<TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get price history for a product from the price_history collection.
+ * @summary Get Price History
+ */
+export function useGetPriceHistory<TData = Awaited<ReturnType<typeof getPriceHistory>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPriceHistory>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetPriceHistoryQueryOptions(productId,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -674,7 +928,7 @@ export const getGetForecastUrl = (productId: string,) => {
 
 
 
-  return `/api/v1/products/${productId}/forecast`
+  return `/price-prophet/api/v1/products/${productId}/forecast`
 }
 
 /**
@@ -708,12 +962,12 @@ export const getForecast = async (productId: string, options?: RequestInit): Pro
 
 export const getGetForecastQueryKey = (productId: string,) => {
     return [
-    `/api/v1/products/${productId}/forecast`
+    `/price-prophet/api/v1/products/${productId}/forecast`
     ] as const;
     }
 
 
-export const getGetForecastQueryOptions = <TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>, fetch?: RequestInit}
+export const getGetForecastQueryOptions = <TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -728,7 +982,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetForecastQueryResult = NonNullable<Awaited<ReturnType<typeof getForecast>>>
@@ -743,13 +997,58 @@ export type GetForecastQueryError = Error | HTTPValidationError
  * @summary Get Forecast
  */
 export function useGetForecast<TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(
- productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ productId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getForecast>>,
+          TError,
+          Awaited<ReturnType<typeof getForecast>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Server-side backtested price forecast ("Profeet voorspelt").
+ *
+ * Returns the forecast dict, or null (HTTP 200) when there is none; the
+ * `X-Forecast-Reason` header then says why.
+ * @summary Get Forecast
+ */
+export function useGetForecast<TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getForecast>>,
+          TError,
+          Awaited<ReturnType<typeof getForecast>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Server-side backtested price forecast ("Profeet voorspelt").
+ *
+ * Returns the forecast dict, or null (HTTP 200) when there is none; the
+ * `X-Forecast-Reason` header then says why.
+ * @summary Get Forecast
+ */
+export function useGetForecast<TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Server-side backtested price forecast ("Profeet voorspelt").
+ *
+ * Returns the forecast dict, or null (HTTP 200) when there is none; the
+ * `X-Forecast-Reason` header then says why.
+ * @summary Get Forecast
+ */
+export function useGetForecast<TData = Awaited<ReturnType<typeof getForecast>>, TError = Error | HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getForecast>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetForecastQueryOptions(productId,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -806,7 +1105,7 @@ export const getSearchProductsByPathUrl = (query: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products/search/${query}?${stringifiedParams}` : `/api/v1/products/search/${query}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products/search/${query}?${stringifiedParams}` : `/price-prophet/api/v1/products/search/${query}`
 }
 
 /**
@@ -844,13 +1143,13 @@ export const searchProductsByPath = async (query: string,
 export const getSearchProductsByPathQueryKey = (query: string,
     params?: SearchProductsByPathParams,) => {
     return [
-    `/api/v1/products/search/${query}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products/search/${query}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getSearchProductsByPathQueryOptions = <TData = Awaited<ReturnType<typeof searchProductsByPath>>, TError = Error | HTTPValidationError>(query: string,
-    params?: SearchProductsByPathParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>, fetch?: RequestInit}
+    params?: SearchProductsByPathParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -865,7 +1164,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: query !== null && query !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: query !== null && query !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type SearchProductsByPathQueryResult = NonNullable<Awaited<ReturnType<typeof searchProductsByPath>>>
@@ -883,13 +1182,67 @@ export type SearchProductsByPathQueryError = Error | HTTPValidationError
  */
 export function useSearchProductsByPath<TData = Awaited<ReturnType<typeof searchProductsByPath>>, TError = Error | HTTPValidationError>(
  query: string,
-    params?: SearchProductsByPathParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  SearchProductsByPathParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProductsByPath>>,
+          TError,
+          Awaited<ReturnType<typeof searchProductsByPath>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products by name.
+ *
+ * - **query**: Search query (product name)
+ * - **retailer**: Optional retailer filter
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Search Products
+ */
+export function useSearchProductsByPath<TData = Awaited<ReturnType<typeof searchProductsByPath>>, TError = Error | HTTPValidationError>(
+ query: string,
+    params?: SearchProductsByPathParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchProductsByPath>>,
+          TError,
+          Awaited<ReturnType<typeof searchProductsByPath>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products by name.
+ *
+ * - **query**: Search query (product name)
+ * - **retailer**: Optional retailer filter
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Search Products
+ */
+export function useSearchProductsByPath<TData = Awaited<ReturnType<typeof searchProductsByPath>>, TError = Error | HTTPValidationError>(
+ query: string,
+    params?: SearchProductsByPathParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Search products by name.
+ *
+ * - **query**: Search query (product name)
+ * - **retailer**: Optional retailer filter
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Search Products
+ */
+export function useSearchProductsByPath<TData = Awaited<ReturnType<typeof searchProductsByPath>>, TError = Error | HTTPValidationError>(
+ query: string,
+    params?: SearchProductsByPathParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchProductsByPath>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getSearchProductsByPathQueryOptions(query,params,options)
 
-  const _query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const _query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(_query, queryOptions.queryKey);
 }
@@ -946,7 +1299,7 @@ export const getListProductsByFolderUrl = (folderId: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products/folder/${folderId}?${stringifiedParams}` : `/api/v1/products/folder/${folderId}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products/folder/${folderId}?${stringifiedParams}` : `/price-prophet/api/v1/products/folder/${folderId}`
 }
 
 /**
@@ -983,13 +1336,13 @@ export const listProductsByFolder = async (folderId: string,
 export const getListProductsByFolderQueryKey = (folderId: string,
     params?: ListProductsByFolderParams,) => {
     return [
-    `/api/v1/products/folder/${folderId}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products/folder/${folderId}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getListProductsByFolderQueryOptions = <TData = Awaited<ReturnType<typeof listProductsByFolder>>, TError = Error | HTTPValidationError>(folderId: string,
-    params?: ListProductsByFolderParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>, fetch?: RequestInit}
+    params?: ListProductsByFolderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -1004,7 +1357,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: folderId !== null && folderId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: folderId !== null && folderId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListProductsByFolderQueryResult = NonNullable<Awaited<ReturnType<typeof listProductsByFolder>>>
@@ -1021,13 +1374,64 @@ export type ListProductsByFolderQueryError = Error | HTTPValidationError
  */
 export function useListProductsByFolder<TData = Awaited<ReturnType<typeof listProductsByFolder>>, TError = Error | HTTPValidationError>(
  folderId: string,
-    params?: ListProductsByFolderParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  ListProductsByFolderParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsByFolder>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsByFolder>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products from a specific folder.
+ *
+ * - **folder_id**: Folder identifier
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 1000)
+ * @summary Get Products By Folder
+ */
+export function useListProductsByFolder<TData = Awaited<ReturnType<typeof listProductsByFolder>>, TError = Error | HTTPValidationError>(
+ folderId: string,
+    params?: ListProductsByFolderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsByFolder>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsByFolder>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products from a specific folder.
+ *
+ * - **folder_id**: Folder identifier
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 1000)
+ * @summary Get Products By Folder
+ */
+export function useListProductsByFolder<TData = Awaited<ReturnType<typeof listProductsByFolder>>, TError = Error | HTTPValidationError>(
+ folderId: string,
+    params?: ListProductsByFolderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products from a specific folder.
+ *
+ * - **folder_id**: Folder identifier
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 1000)
+ * @summary Get Products By Folder
+ */
+export function useListProductsByFolder<TData = Awaited<ReturnType<typeof listProductsByFolder>>, TError = Error | HTTPValidationError>(
+ folderId: string,
+    params?: ListProductsByFolderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByFolder>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListProductsByFolderQueryOptions(folderId,params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -1084,7 +1488,7 @@ export const getListProductsByRetailerUrl = (retailer: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products/retailer/${retailer}?${stringifiedParams}` : `/api/v1/products/retailer/${retailer}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products/retailer/${retailer}?${stringifiedParams}` : `/price-prophet/api/v1/products/retailer/${retailer}`
 }
 
 /**
@@ -1123,13 +1527,13 @@ export const listProductsByRetailer = async (retailer: string,
 export const getListProductsByRetailerQueryKey = (retailer: string,
     params?: ListProductsByRetailerParams,) => {
     return [
-    `/api/v1/products/retailer/${retailer}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products/retailer/${retailer}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getListProductsByRetailerQueryOptions = <TData = Awaited<ReturnType<typeof listProductsByRetailer>>, TError = Error | HTTPValidationError>(retailer: string,
-    params?: ListProductsByRetailerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>, fetch?: RequestInit}
+    params?: ListProductsByRetailerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -1144,7 +1548,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: retailer !== null && retailer !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: retailer !== null && retailer !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListProductsByRetailerQueryResult = NonNullable<Awaited<ReturnType<typeof listProductsByRetailer>>>
@@ -1163,13 +1567,70 @@ export type ListProductsByRetailerQueryError = Error | HTTPValidationError
  */
 export function useListProductsByRetailer<TData = Awaited<ReturnType<typeof listProductsByRetailer>>, TError = Error | HTTPValidationError>(
  retailer: string,
-    params?: ListProductsByRetailerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  ListProductsByRetailerParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsByRetailer>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsByRetailer>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products for a specific retailer.
+ *
+ * A key this host does not carry answers an empty list, with the key in
+ * `retailer_filter.ignored`.
+ *
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Get Products By Retailer
+ */
+export function useListProductsByRetailer<TData = Awaited<ReturnType<typeof listProductsByRetailer>>, TError = Error | HTTPValidationError>(
+ retailer: string,
+    params?: ListProductsByRetailerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsByRetailer>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsByRetailer>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products for a specific retailer.
+ *
+ * A key this host does not carry answers an empty list, with the key in
+ * `retailer_filter.ignored`.
+ *
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Get Products By Retailer
+ */
+export function useListProductsByRetailer<TData = Awaited<ReturnType<typeof listProductsByRetailer>>, TError = Error | HTTPValidationError>(
+ retailer: string,
+    params?: ListProductsByRetailerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all products for a specific retailer.
+ *
+ * A key this host does not carry answers an empty list, with the key in
+ * `retailer_filter.ignored`.
+ *
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ * @summary Get Products By Retailer
+ */
+export function useListProductsByRetailer<TData = Awaited<ReturnType<typeof listProductsByRetailer>>, TError = Error | HTTPValidationError>(
+ retailer: string,
+    params?: ListProductsByRetailerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsByRetailer>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListProductsByRetailerQueryOptions(retailer,params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -1225,7 +1686,7 @@ export const getListPromotionsUrl = (params?: ListPromotionsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/products/promotional/all?${stringifiedParams}` : `/api/v1/products/promotional/all`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/products/promotional/all?${stringifiedParams}` : `/price-prophet/api/v1/products/promotional/all`
 }
 
 /**
@@ -1267,12 +1728,12 @@ export const listPromotions = async (params?: ListPromotionsParams, options?: Re
 
 export const getListPromotionsQueryKey = (params?: ListPromotionsParams,) => {
     return [
-    `/api/v1/products/promotional/all`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/products/promotional/all`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListPromotionsQueryOptions = <TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(params?: ListPromotionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>, fetch?: RequestInit}
+export const getListPromotionsQueryOptions = <TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(params?: ListPromotionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -1287,7 +1748,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListPromotionsQueryResult = NonNullable<Awaited<ReturnType<typeof listPromotions>>>
@@ -1310,13 +1771,82 @@ export type ListPromotionsQueryError = Error | HTTPValidationError
  * @summary Get Promotional Products
  */
 export function useListPromotions<TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(
- params?: ListPromotionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListPromotionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPromotions>>,
+          TError,
+          Awaited<ReturnType<typeof listPromotions>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all promotional products, cheapest first.
+ *
+ * - **retailer**: Optional retailer filter
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ *
+ * `total` is the number of promotions matching the filter, not the size of
+ * this page: divide it by `page_size` to know how many pages to fetch. There
+ * is no result cap — paging to the last page returns the whole set, and the
+ * ordering is stable across pages, so a full walk yields every promotion once.
+ * @summary Get Promotional Products
+ */
+export function useListPromotions<TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(
+ params?: ListPromotionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPromotions>>,
+          TError,
+          Awaited<ReturnType<typeof listPromotions>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all promotional products, cheapest first.
+ *
+ * - **retailer**: Optional retailer filter
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ *
+ * `total` is the number of promotions matching the filter, not the size of
+ * this page: divide it by `page_size` to know how many pages to fetch. There
+ * is no result cap — paging to the last page returns the whole set, and the
+ * ordering is stable across pages, so a full walk yields every promotion once.
+ * @summary Get Promotional Products
+ */
+export function useListPromotions<TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(
+ params?: ListPromotionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all promotional products, cheapest first.
+ *
+ * - **retailer**: Optional retailer filter
+ * - **min_valid_from**: Only promotions starting on or after this date (YYYY-MM-DD)
+ * - **max_valid_from**: Only promotions starting on or before this date (YYYY-MM-DD)
+ * - **page**: Page number (starts at 1)
+ * - **page_size**: Number of items per page (max 100)
+ *
+ * `total` is the number of promotions matching the filter, not the size of
+ * this page: divide it by `page_size` to know how many pages to fetch. There
+ * is no result cap — paging to the last page returns the whole set, and the
+ * ordering is stable across pages, so a full walk yields every promotion once.
+ * @summary Get Promotional Products
+ */
+export function useListPromotions<TData = Awaited<ReturnType<typeof listPromotions>>, TError = Error | HTTPValidationError>(
+ params?: ListPromotionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPromotions>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListPromotionsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

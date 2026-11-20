@@ -34,9 +34,14 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -131,7 +136,7 @@ export const getCreateReportUrl = () => {
 
 
 
-  return `/api/v1/reports`
+  return `/price-prophet/api/v1/reports`
 }
 
 /**
@@ -246,13 +251,13 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
  */
 export const useCreateReport = <TError = Error | HTTPValidationError,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReport>>, TError,CreateReportMutationVariables, TContext>, fetch?: RequestInit}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createReport>>,
         TError,
         CreateReportMutationVariables,
         TContext
       > => {
-      return useMutation(getCreateReportMutationOptions(options));
+      return useMutation(getCreateReportMutationOptions(options), queryClient);
     }
     export type listReportsResponse200 = {
   data: ReportList
@@ -305,7 +310,7 @@ export const getListReportsUrl = (params?: ListReportsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/reports?${stringifiedParams}` : `/api/v1/reports`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/reports?${stringifiedParams}` : `/price-prophet/api/v1/reports`
 }
 
 /**
@@ -336,12 +341,12 @@ export const listReports = async (params?: ListReportsParams, options?: RequestI
 
 export const getListReportsQueryKey = (params?: ListReportsParams,) => {
     return [
-    `/api/v1/reports`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/reports`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListReportsQueryOptions = <TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(params?: ListReportsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>, fetch?: RequestInit}
+export const getListReportsQueryOptions = <TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(params?: ListReportsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -356,7 +361,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListReportsQueryResult = NonNullable<Awaited<ReturnType<typeof listReports>>>
@@ -368,13 +373,49 @@ export type ListReportsQueryError = Error | HTTPValidationError
  * @summary Your own reports
  */
 export function useListReports<TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(
- params?: ListReportsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListReportsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listReports>>,
+          TError,
+          Awaited<ReturnType<typeof listReports>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every report sent with your key, newest first. Needs a key: without one there is nothing to tell whose reports are yours. Only the reports for this storefront (`www.prijsprofeet.be` for Belgian rows).
+ * @summary Your own reports
+ */
+export function useListReports<TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(
+ params?: ListReportsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listReports>>,
+          TError,
+          Awaited<ReturnType<typeof listReports>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every report sent with your key, newest first. Needs a key: without one there is nothing to tell whose reports are yours. Only the reports for this storefront (`www.prijsprofeet.be` for Belgian rows).
+ * @summary Your own reports
+ */
+export function useListReports<TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(
+ params?: ListReportsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Every report sent with your key, newest first. Needs a key: without one there is nothing to tell whose reports are yours. Only the reports for this storefront (`www.prijsprofeet.be` for Belgian rows).
+ * @summary Your own reports
+ */
+export function useListReports<TData = Awaited<ReturnType<typeof listReports>>, TError = Error | HTTPValidationError>(
+ params?: ListReportsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListReportsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -423,7 +464,7 @@ export const getGetReportUrl = (reportId: string,) => {
 
 
 
-  return `/api/v1/reports/${reportId}`
+  return `/price-prophet/api/v1/reports/${reportId}`
 }
 
 /**
@@ -454,12 +495,12 @@ export const getReport = async (reportId: string, options?: RequestInit): Promis
 
 export const getGetReportQueryKey = (reportId: string,) => {
     return [
-    `/api/v1/reports/${reportId}`
+    `/price-prophet/api/v1/reports/${reportId}`
     ] as const;
     }
 
 
-export const getGetReportQueryOptions = <TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(reportId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>, fetch?: RequestInit}
+export const getGetReportQueryOptions = <TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -474,7 +515,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: reportId !== null && reportId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: reportId !== null && reportId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetReportQueryResult = NonNullable<Awaited<ReturnType<typeof getReport>>>
@@ -486,13 +527,49 @@ export type GetReportQueryError = Error | HTTPValidationError
  * @summary Status of a report
  */
 export function useGetReport<TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(
- reportId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ reportId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReport>>,
+          TError,
+          Awaited<ReturnType<typeof getReport>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Where a report stands, for whoever holds its id (the id from `POST /api/v1/reports`; it cannot be guessed). Free, no key needed. Use it to tell your user that the error they reported is fixed. Ask the storefront you reported on: a Dutch report is not found on `www.prijsprofeet.be`.
+ * @summary Status of a report
+ */
+export function useGetReport<TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(
+ reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReport>>,
+          TError,
+          Awaited<ReturnType<typeof getReport>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Where a report stands, for whoever holds its id (the id from `POST /api/v1/reports`; it cannot be guessed). Free, no key needed. Use it to tell your user that the error they reported is fixed. Ask the storefront you reported on: a Dutch report is not found on `www.prijsprofeet.be`.
+ * @summary Status of a report
+ */
+export function useGetReport<TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(
+ reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Where a report stands, for whoever holds its id (the id from `POST /api/v1/reports`; it cannot be guessed). Free, no key needed. Use it to tell your user that the error they reported is fixed. Ask the storefront you reported on: a Dutch report is not found on `www.prijsprofeet.be`.
+ * @summary Status of a report
+ */
+export function useGetReport<TData = Awaited<ReturnType<typeof getReport>>, TError = Error | HTTPValidationError>(
+ reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReport>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetReportQueryOptions(reportId,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import SearchInput from "./search-input";
 import SearchResults from "./search-results";
-import { useSearch } from "./hooks/useSearch";
+import { useSearchProducts } from "@/api/price-prophet";
 
 export default function SearchBox() {
   const [query, setQuery] = useState("");
-  const { results, loading } = useSearch(query);
+  const { data, isLoading } = useSearchProducts({ q: query }, { query: { enabled: query.trim().length >= 3 } });
+
 
   return (
     <div className="relative w-full max-w-xl">
@@ -18,8 +19,8 @@ export default function SearchBox() {
 
       {query.length > 0 && (
         <SearchResults
-          results={results}
-          loading={loading}
+          results={[]}
+          loading={isLoading}
         />
       )}
     </div>

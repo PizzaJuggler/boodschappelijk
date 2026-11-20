@@ -33,8 +33,13 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -116,7 +121,7 @@ export const getListPrivateLabelEquivalentsUrl = (params?: ListPrivateLabelEquiv
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/private-label-equivalents?${stringifiedParams}` : `/api/v1/private-label-equivalents`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/private-label-equivalents?${stringifiedParams}` : `/price-prophet/api/v1/private-label-equivalents`
 }
 
 /**
@@ -155,12 +160,12 @@ export const listPrivateLabelEquivalents = async (params?: ListPrivateLabelEquiv
 
 export const getListPrivateLabelEquivalentsQueryKey = (params?: ListPrivateLabelEquivalentsParams,) => {
     return [
-    `/api/v1/private-label-equivalents`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/private-label-equivalents`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListPrivateLabelEquivalentsQueryOptions = <TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(params?: ListPrivateLabelEquivalentsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>, fetch?: RequestInit}
+export const getListPrivateLabelEquivalentsQueryOptions = <TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(params?: ListPrivateLabelEquivalentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -175,7 +180,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListPrivateLabelEquivalentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>>
@@ -195,13 +200,73 @@ export type ListPrivateLabelEquivalentsQueryError = Error | HTTPValidationError
  * @summary Private-label products that are the same across chains (Business)
  */
 export function useListPrivateLabelEquivalents<TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(
- params?: ListPrivateLabelEquivalentsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListPrivateLabelEquivalentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPrivateLabelEquivalents>>,
+          TError,
+          Awaited<ReturnType<typeof listPrivateLabelEquivalents>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Which house-brand product at one chain is the same product at another: `AH Halfvolle melk 1 L` and `Jumbo Halfvolle melk 1 L` share no barcode, so no EAN join finds them. Each item is one claim: two current shelf rows at two chains.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **The rule** (`rule`). The same name after removing brand, chain prefix and size; pack sizes within 10% in one unit; and none of the pre-registered differences (organic, 0%/light, ply count, cheese age). No similarity threshold: a near match is not a claim. Measured against hand-labelled pairs: 77 of 78 correct for the Netherlands (98.7%, 95% interval 93-100%), 27 of 27 for Belgium. "The same" means the same product in the same pack size.
+ *
+ * **Filters.** `retailer` (either side), `shelf_id` (needs `retailer`) to look up one SKU, and `q` for part of the name. Without filters you page through every claim of this storefront.
+ *
+ * **Coverage.** Regular shelf rows only, rebuilt nightly, with current prices. Chains without a brand field or without regular prices (Lidl, Carrefour) have no claims. Responses are cached for up to an hour.
+ * @summary Private-label products that are the same across chains (Business)
+ */
+export function useListPrivateLabelEquivalents<TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(
+ params?: ListPrivateLabelEquivalentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPrivateLabelEquivalents>>,
+          TError,
+          Awaited<ReturnType<typeof listPrivateLabelEquivalents>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Which house-brand product at one chain is the same product at another: `AH Halfvolle melk 1 L` and `Jumbo Halfvolle melk 1 L` share no barcode, so no EAN join finds them. Each item is one claim: two current shelf rows at two chains.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **The rule** (`rule`). The same name after removing brand, chain prefix and size; pack sizes within 10% in one unit; and none of the pre-registered differences (organic, 0%/light, ply count, cheese age). No similarity threshold: a near match is not a claim. Measured against hand-labelled pairs: 77 of 78 correct for the Netherlands (98.7%, 95% interval 93-100%), 27 of 27 for Belgium. "The same" means the same product in the same pack size.
+ *
+ * **Filters.** `retailer` (either side), `shelf_id` (needs `retailer`) to look up one SKU, and `q` for part of the name. Without filters you page through every claim of this storefront.
+ *
+ * **Coverage.** Regular shelf rows only, rebuilt nightly, with current prices. Chains without a brand field or without regular prices (Lidl, Carrefour) have no claims. Responses are cached for up to an hour.
+ * @summary Private-label products that are the same across chains (Business)
+ */
+export function useListPrivateLabelEquivalents<TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(
+ params?: ListPrivateLabelEquivalentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Which house-brand product at one chain is the same product at another: `AH Halfvolle melk 1 L` and `Jumbo Halfvolle melk 1 L` share no barcode, so no EAN join finds them. Each item is one claim: two current shelf rows at two chains.
+ *
+ * **Access.** Business key in `X-API-Key`. Pro, trial and free keys get 403.
+ *
+ * **The rule** (`rule`). The same name after removing brand, chain prefix and size; pack sizes within 10% in one unit; and none of the pre-registered differences (organic, 0%/light, ply count, cheese age). No similarity threshold: a near match is not a claim. Measured against hand-labelled pairs: 77 of 78 correct for the Netherlands (98.7%, 95% interval 93-100%), 27 of 27 for Belgium. "The same" means the same product in the same pack size.
+ *
+ * **Filters.** `retailer` (either side), `shelf_id` (needs `retailer`) to look up one SKU, and `q` for part of the name. Without filters you page through every claim of this storefront.
+ *
+ * **Coverage.** Regular shelf rows only, rebuilt nightly, with current prices. Chains without a brand field or without regular prices (Lidl, Carrefour) have no claims. Responses are cached for up to an hour.
+ * @summary Private-label products that are the same across chains (Business)
+ */
+export function useListPrivateLabelEquivalents<TData = Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError = Error | HTTPValidationError>(
+ params?: ListPrivateLabelEquivalentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPrivateLabelEquivalents>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListPrivateLabelEquivalentsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

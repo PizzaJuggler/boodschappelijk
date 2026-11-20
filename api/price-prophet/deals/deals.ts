@@ -33,8 +33,13 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -125,7 +130,7 @@ export const getListTopDealsUrl = (params?: ListTopDealsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/deals/top?${stringifiedParams}` : `/api/v1/deals/top`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/deals/top?${stringifiedParams}` : `/price-prophet/api/v1/deals/top`
 }
 
 /**
@@ -172,12 +177,12 @@ export const listTopDeals = async (params?: ListTopDealsParams, options?: Reques
 
 export const getListTopDealsQueryKey = (params?: ListTopDealsParams,) => {
     return [
-    `/api/v1/deals/top`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/deals/top`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListTopDealsQueryOptions = <TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(params?: ListTopDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>, fetch?: RequestInit}
+export const getListTopDealsQueryOptions = <TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(params?: ListTopDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -192,7 +197,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListTopDealsQueryResult = NonNullable<Awaited<ReturnType<typeof listTopDeals>>>
@@ -220,13 +225,97 @@ export type ListTopDealsQueryError = Error | HTTPValidationError
  * @summary Get Top Deals Endpoint
  */
 export function useListTopDeals<TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(
- params?: ListTopDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListTopDealsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTopDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listTopDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get top promotional deals grouped by brand.
+ *
+ * Returns two lists:
+ * - **top_by_percentage**: Best deals by savings percentage (e.g., 50% off)
+ * - **top_by_amount**: Best deals by absolute savings (e.g., save EUR 5.00)
+ *
+ * Products are grouped by brand + promotion_type to avoid showing
+ * 15 variants of the same Calve sauce.
+ *
+ * Pass **retailer** (repeatable) to scope the lists to the shops you actually
+ * visit — e.g. only the three supermarkets on your street.
+ *
+ * Each group carries a `representative_product` with `name`, `price`,
+ * `original_price`, `savings_percentage`, `image_url`, `product_url` and
+ * `valid_from`/`valid_until`. Cache the response by all means, but check
+ * `valid_until` before you render it: promotion weeks roll over mid-week and a
+ * cached deal can expire between two of your refreshes.
+ * @summary Get Top Deals Endpoint
+ */
+export function useListTopDeals<TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListTopDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTopDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listTopDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get top promotional deals grouped by brand.
+ *
+ * Returns two lists:
+ * - **top_by_percentage**: Best deals by savings percentage (e.g., 50% off)
+ * - **top_by_amount**: Best deals by absolute savings (e.g., save EUR 5.00)
+ *
+ * Products are grouped by brand + promotion_type to avoid showing
+ * 15 variants of the same Calve sauce.
+ *
+ * Pass **retailer** (repeatable) to scope the lists to the shops you actually
+ * visit — e.g. only the three supermarkets on your street.
+ *
+ * Each group carries a `representative_product` with `name`, `price`,
+ * `original_price`, `savings_percentage`, `image_url`, `product_url` and
+ * `valid_from`/`valid_until`. Cache the response by all means, but check
+ * `valid_until` before you render it: promotion weeks roll over mid-week and a
+ * cached deal can expire between two of your refreshes.
+ * @summary Get Top Deals Endpoint
+ */
+export function useListTopDeals<TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListTopDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get top promotional deals grouped by brand.
+ *
+ * Returns two lists:
+ * - **top_by_percentage**: Best deals by savings percentage (e.g., 50% off)
+ * - **top_by_amount**: Best deals by absolute savings (e.g., save EUR 5.00)
+ *
+ * Products are grouped by brand + promotion_type to avoid showing
+ * 15 variants of the same Calve sauce.
+ *
+ * Pass **retailer** (repeatable) to scope the lists to the shops you actually
+ * visit — e.g. only the three supermarkets on your street.
+ *
+ * Each group carries a `representative_product` with `name`, `price`,
+ * `original_price`, `savings_percentage`, `image_url`, `product_url` and
+ * `valid_from`/`valid_until`. Cache the response by all means, but check
+ * `valid_until` before you render it: promotion weeks roll over mid-week and a
+ * cached deal can expire between two of your refreshes.
+ * @summary Get Top Deals Endpoint
+ */
+export function useListTopDeals<TData = Awaited<ReturnType<typeof listTopDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListTopDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTopDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListTopDealsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -283,7 +372,7 @@ export const getListBrandDealsUrl = (brand: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/deals/brand/${brand}?${stringifiedParams}` : `/api/v1/deals/brand/${brand}`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/deals/brand/${brand}?${stringifiedParams}` : `/price-prophet/api/v1/deals/brand/${brand}`
 }
 
 /**
@@ -318,13 +407,13 @@ export const listBrandDeals = async (brand: string,
 export const getListBrandDealsQueryKey = (brand: string,
     params?: ListBrandDealsParams,) => {
     return [
-    `/api/v1/deals/brand/${brand}`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/deals/brand/${brand}`, ...(params ? [params] : [])
     ] as const;
     }
 
 
 export const getListBrandDealsQueryOptions = <TData = Awaited<ReturnType<typeof listBrandDeals>>, TError = Error | HTTPValidationError>(brand: string,
-    params?: ListBrandDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>, fetch?: RequestInit}
+    params?: ListBrandDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -339,7 +428,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, enabled: brand !== null && brand !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: brand !== null && brand !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListBrandDealsQueryResult = NonNullable<Awaited<ReturnType<typeof listBrandDeals>>>
@@ -354,13 +443,58 @@ export type ListBrandDealsQueryError = Error | HTTPValidationError
  */
 export function useListBrandDeals<TData = Awaited<ReturnType<typeof listBrandDeals>>, TError = Error | HTTPValidationError>(
  brand: string,
-    params?: ListBrandDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    params: undefined |  ListBrandDealsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBrandDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listBrandDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all deals for a specific brand.
+ *
+ * Use this to show all variants when a user clicks on a deal group.
+ * @summary Get Brand Deals
+ */
+export function useListBrandDeals<TData = Awaited<ReturnType<typeof listBrandDeals>>, TError = Error | HTTPValidationError>(
+ brand: string,
+    params?: ListBrandDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBrandDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listBrandDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all deals for a specific brand.
+ *
+ * Use this to show all variants when a user clicks on a deal group.
+ * @summary Get Brand Deals
+ */
+export function useListBrandDeals<TData = Awaited<ReturnType<typeof listBrandDeals>>, TError = Error | HTTPValidationError>(
+ brand: string,
+    params?: ListBrandDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Get all deals for a specific brand.
+ *
+ * Use this to show all variants when a user clicks on a deal group.
+ * @summary Get Brand Deals
+ */
+export function useListBrandDeals<TData = Awaited<ReturnType<typeof listBrandDeals>>, TError = Error | HTTPValidationError>(
+ brand: string,
+    params?: ListBrandDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBrandDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListBrandDealsQueryOptions(brand,params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -404,7 +538,7 @@ export const getGetDealsSummaryUrl = () => {
 
 
 
-  return `/api/v1/deals/summary`
+  return `/price-prophet/api/v1/deals/summary`
 }
 
 /**
@@ -435,12 +569,12 @@ export const getDealsSummary = async ( options?: RequestInit): Promise<getDealsS
 
 export const getGetDealsSummaryQueryKey = () => {
     return [
-    `/api/v1/deals/summary`
+    `/price-prophet/api/v1/deals/summary`
     ] as const;
     }
 
 
-export const getGetDealsSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>, fetch?: RequestInit}
+export const getGetDealsSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -455,7 +589,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetDealsSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getDealsSummary>>>
@@ -467,13 +601,49 @@ export type GetDealsSummaryQueryError = Error
  * @summary Deals Summary Endpoint
  */
 export function useGetDealsSummary<TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDealsSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getDealsSummary>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Aggregate stats: total products, retailer count, max discount, last updated.
+ * @summary Deals Summary Endpoint
+ */
+export function useGetDealsSummary<TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDealsSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getDealsSummary>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Aggregate stats: total products, retailer count, max discount, last updated.
+ * @summary Deals Summary Endpoint
+ */
+export function useGetDealsSummary<TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Aggregate stats: total products, retailer count, max discount, last updated.
+ * @summary Deals Summary Endpoint
+ */
+export function useGetDealsSummary<TData = Awaited<ReturnType<typeof getDealsSummary>>, TError = Error>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDealsSummary>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetDealsSummaryQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -537,7 +707,7 @@ export const getListPopularDealsUrl = (params?: ListPopularDealsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/deals/popular?${stringifiedParams}` : `/api/v1/deals/popular`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/deals/popular?${stringifiedParams}` : `/price-prophet/api/v1/deals/popular`
 }
 
 /**
@@ -568,12 +738,12 @@ export const listPopularDeals = async (params?: ListPopularDealsParams, options?
 
 export const getListPopularDealsQueryKey = (params?: ListPopularDealsParams,) => {
     return [
-    `/api/v1/deals/popular`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/deals/popular`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListPopularDealsQueryOptions = <TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(params?: ListPopularDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>, fetch?: RequestInit}
+export const getListPopularDealsQueryOptions = <TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(params?: ListPopularDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -588,7 +758,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListPopularDealsQueryResult = NonNullable<Awaited<ReturnType<typeof listPopularDeals>>>
@@ -600,13 +770,49 @@ export type ListPopularDealsQueryError = Error | HTTPValidationError
  * @summary Popular Deals Endpoint
  */
 export function useListPopularDeals<TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(
- params?: ListPopularDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListPopularDealsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPopularDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listPopularDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Most-clicked products from the last 7 days.
+ * @summary Popular Deals Endpoint
+ */
+export function useListPopularDeals<TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListPopularDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPopularDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listPopularDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Most-clicked products from the last 7 days.
+ * @summary Popular Deals Endpoint
+ */
+export function useListPopularDeals<TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListPopularDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Most-clicked products from the last 7 days.
+ * @summary Popular Deals Endpoint
+ */
+export function useListPopularDeals<TData = Awaited<ReturnType<typeof listPopularDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListPopularDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPopularDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListPopularDealsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -670,7 +876,7 @@ export const getListDealsByTypeUrl = (params: ListDealsByTypeParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/deals/by-type?${stringifiedParams}` : `/api/v1/deals/by-type`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/deals/by-type?${stringifiedParams}` : `/price-prophet/api/v1/deals/by-type`
 }
 
 /**
@@ -701,12 +907,12 @@ export const listDealsByType = async (params: ListDealsByTypeParams, options?: R
 
 export const getListDealsByTypeQueryKey = (params?: ListDealsByTypeParams,) => {
     return [
-    `/api/v1/deals/by-type`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/deals/by-type`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListDealsByTypeQueryOptions = <TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(params: ListDealsByTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>, fetch?: RequestInit}
+export const getListDealsByTypeQueryOptions = <TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(params: ListDealsByTypeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -721,7 +927,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListDealsByTypeQueryResult = NonNullable<Awaited<ReturnType<typeof listDealsByType>>>
@@ -733,13 +939,49 @@ export type ListDealsByTypeQueryError = Error | HTTPValidationError
  * @summary Deals By Type Endpoint
  */
 export function useListDealsByType<TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(
- params: ListDealsByTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: ListDealsByTypeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDealsByType>>,
+          TError,
+          Awaited<ReturnType<typeof listDealsByType>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products matching a promotion type keyword.
+ * @summary Deals By Type Endpoint
+ */
+export function useListDealsByType<TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(
+ params: ListDealsByTypeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDealsByType>>,
+          TError,
+          Awaited<ReturnType<typeof listDealsByType>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products matching a promotion type keyword.
+ * @summary Deals By Type Endpoint
+ */
+export function useListDealsByType<TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(
+ params: ListDealsByTypeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products matching a promotion type keyword.
+ * @summary Deals By Type Endpoint
+ */
+export function useListDealsByType<TData = Awaited<ReturnType<typeof listDealsByType>>, TError = Error | HTTPValidationError>(
+ params: ListDealsByTypeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDealsByType>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListDealsByTypeQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
@@ -803,7 +1045,7 @@ export const getListNewDealsUrl = (params?: ListNewDealsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/deals/new?${stringifiedParams}` : `/api/v1/deals/new`
+  return stringifiedParams.length > 0 ? `/price-prophet/api/v1/deals/new?${stringifiedParams}` : `/price-prophet/api/v1/deals/new`
 }
 
 /**
@@ -834,12 +1076,12 @@ export const listNewDeals = async (params?: ListNewDealsParams, options?: Reques
 
 export const getListNewDealsQueryKey = (params?: ListNewDealsParams,) => {
     return [
-    `/api/v1/deals/new`, ...(params ? [params] : [])
+    `/price-prophet/api/v1/deals/new`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListNewDealsQueryOptions = <TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(params?: ListNewDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>, fetch?: RequestInit}
+export const getListNewDealsQueryOptions = <TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(params?: ListNewDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
 const {query: queryOptions, fetch: fetchOptions} = options ?? {};
@@ -854,7 +1096,7 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ListNewDealsQueryResult = NonNullable<Awaited<ReturnType<typeof listNewDeals>>>
@@ -866,13 +1108,49 @@ export type ListNewDealsQueryError = Error | HTTPValidationError
  * @summary New Deals Endpoint
  */
 export function useListNewDeals<TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(
- params?: ListNewDealsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>, fetch?: RequestInit}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ params: undefined |  ListNewDealsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNewDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listNewDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products scraped this week, sorted by most recent.
+ * @summary New Deals Endpoint
+ */
+export function useListNewDeals<TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListNewDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNewDeals>>,
+          TError,
+          Awaited<ReturnType<typeof listNewDeals>>
+        > , 'initialData'
+      >, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products scraped this week, sorted by most recent.
+ * @summary New Deals Endpoint
+ */
+export function useListNewDeals<TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListNewDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Products scraped this week, sorted by most recent.
+ * @summary New Deals Endpoint
+ */
+export function useListNewDeals<TData = Awaited<ReturnType<typeof listNewDeals>>, TError = Error | HTTPValidationError>(
+ params?: ListNewDealsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNewDeals>>, TError, TData>>, fetch?: RequestInit}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListNewDealsQueryOptions(params,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
