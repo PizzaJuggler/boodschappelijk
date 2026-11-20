@@ -7,8 +7,8 @@ function BottomSheet() {
     return <div className="py-4 bg-accent absolute bottom-0 w-full px-4">
         <div className="mx-auto xl:w-4xl flex justify-center gap-4">
             <NavigationItem name="Zoeken" href="/search"><Search /></NavigationItem>
-            <NavigationItem name="Lijsten" href="/list"><List /></NavigationItem>
-            <NavigationItem name="Mandje" href="/shopping-cart"><ShoppingBag /></NavigationItem>
+            <NavigationItem name="Lijsten" href="/lists"><List /></NavigationItem>
+            <NavigationItem name="Mandje" href="/cart"><ShoppingBag /></NavigationItem>
         </div>
     </div>
 }

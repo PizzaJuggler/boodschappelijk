@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
       }
     ]
   },
+  redirects: () => ([
+    {
+      source: '/',
+      destination: "/search",
+      permanent: false
+    }
+  ]),
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
