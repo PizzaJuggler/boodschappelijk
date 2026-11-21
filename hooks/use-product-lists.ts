@@ -22,8 +22,51 @@ export default function useProductLists() {
   };
 
   const removeList = (id: string) => {
-    setListsCache(lists.filter((list) => list.id === id));
+    setListsCache(lists.filter((list) => list.id !== id));
   };
 
-  return { addList, removeList, lists: mounted ? lists : [] };
+  const addProduct = (productName: string, listId?: string) => {
+    if (!listId) {
+      return;
+    }
+
+    const list = lists.find((list) => list.id === listId);
+
+    if (list === undefined) {
+      return;
+    }
+
+    const newList: ProductList = {
+      ...list,
+      products: [
+        ...list?.products,
+        { id: crypto.randomUUID(), name: productName },
+      ],
+    };
+
+    setListsCache([...lists.filter((list) => list.id !== listId), newList]);
+  };
+
+  const removeProduct = (productId: string, listId?: string) => {
+    if (!listId) {
+      return;
+    }
+
+    const list = lists.find((list) => list.id === listId);
+
+    if (list === undefined) {
+      return;
+    }
+
+    const newList: ProductList = {
+      ...list,
+      products: [
+        ...list?.products.filter((product) => product.id !== productId),
+      ],
+    };
+
+    setListsCache([...lists.filter((list) => list.id !== listId), newList]);
+  };
+
+  return { addList, removeList, lists: mounted ? lists : [], addProduct };
 }

@@ -41,7 +41,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </nav>
 
         <Providers>
-          <div className="md:w-3xl md:mx-auto pb-20">{children}</div>
+          <div className="md:w-3xl md:mx-auto pb-20 flex flex-col px-4 py-4 gap-4">
+            {children}
+          </div>
 
           <BottomSheet />
         </Providers>

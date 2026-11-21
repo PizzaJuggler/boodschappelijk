@@ -1,55 +1,46 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import {
-  InputGroup,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import AddItem from "@/components/ui/add-item";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import useProductLists from "@/hooks/use-product-lists";
+import { Trash } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
   const [listName, setListName] = useState("");
-  const { lists, addList } = useProductLists();
+  const { lists, addList, removeList } = useProductLists();
 
   return (
-    <div className="flex flex-col bg-background px-4 py-4 gap-4">
+    <>
       <h1 className="font-bold text-2xl">Lijsten</h1>
-      <form
+      <AddItem
+        title="Voeg lijst toe+"
+        item={listName}
+        onChange={(e) => {
+          setListName(e.target.value);
+        }}
         onSubmit={() => {
           addList({
             id: crypto.randomUUID(),
             name: listName,
             products: [],
           });
-
-          setListName("");
         }}
-      >
-        <InputGroup>
-          <InputGroupInput
-            value={listName}
-            onChange={(e) => setListName(e.target.value)}
-          ></InputGroupInput>
-          <InputGroupButton
-            className="bg-primary text-accent ml-auto cursor:pointer"
-            size="sm"
-            type="submit"
-          >
-            Voeg toe
-          </InputGroupButton>
-        </InputGroup>
-      </form>
+      />
       {lists.map((list) => (
-        <Card
-          key={list.id}
-          className="hover:shadow-md px-4 transition-shadow cursor-pointer"
-        >
-          {list.name}
-        </Card>
+        <Link key={list.id} href={`/lists/${list.id}`}>
+          <Card className="hover:shadow-md px-4 transition-shadow cursor-pointer flex flex-col">
+            <CardContent className="flex justify-between">
+              <div>{list.name}</div>
+              <Button onClick={() => removeList(list.id)}>
+                <Trash />
+              </Button>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
-    </div>
+    </>
   );
 }

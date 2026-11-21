@@ -1,7 +1,5 @@
-import { Product } from "./product";
+import { Identifiable } from "./identifiable";
 
-export type ProductList = {
-  id: string;
-  name: string;
-  products: Product[];
+export type ProductList = Identifiable & {
+  products: Identifiable[];
 };

@@ -20,11 +20,11 @@ const products: Product[] = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col bg-background px-4 py-4 gap-4">
+    <>
       <h1 className="font-bold text-xl">Pizza Party</h1>
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
-    </div>
+    </>
   );
 }
