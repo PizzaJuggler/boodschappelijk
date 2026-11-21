@@ -1,9 +1,10 @@
 "use client";
 import AddItem from "@/components/ui/add-item";
 import { Card } from "@/components/ui/card";
-import useProductLists from "@/hooks/use-product-lists";
+import { selectSelectedList } from "@/stores/ProductList/selectors";
+import { useProductListStore } from "@/stores/ProductList/store";
 import { useParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export default function listWrapper() {
   return (
@@ -15,10 +16,16 @@ export default function listWrapper() {
 
 function List() {
   const [productName, setProductName] = useState("");
-  const params = useParams();
-  const { lists, addProduct } = useProductLists();
+  const { id } = useParams();
 
-  const list = lists.find((list) => list.id === params.id);
+  const { addProduct, selectList } = useProductListStore();
+
+  useEffect(() => {
+    if (typeof id === "string") {
+      selectList(id);
+    }
+  }, [id]);
+  const list = useProductListStore(selectSelectedList);
 
   return (
     <div>
@@ -30,7 +37,11 @@ function List() {
           setProductName(e.target.value);
         }}
         onSubmit={() => {
-          addProduct(productName, list?.id);
+          console.log(list);
+          if (list?.id) {
+            addProduct(list.id, { id: crypto.randomUUID(), name: productName });
+          }
+
           setProductName("");
         }}
       />

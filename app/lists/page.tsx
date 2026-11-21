@@ -3,14 +3,14 @@
 import AddItem from "@/components/ui/add-item";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import useProductLists from "@/hooks/use-product-lists";
+import { useProductListStore } from "@/stores/ProductList/store";
 import { Trash } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
   const [listName, setListName] = useState("");
-  const { lists, addList, removeList } = useProductLists();
+  const { lists, addList, removeList } = useProductListStore();
 
   return (
     <>
@@ -22,11 +22,7 @@ export default function Home() {
           setListName(e.target.value);
         }}
         onSubmit={() => {
-          addList({
-            id: crypto.randomUUID(),
-            name: listName,
-            products: [],
-          });
+          addList(listName);
         }}
       />
       {lists.map((list) => (

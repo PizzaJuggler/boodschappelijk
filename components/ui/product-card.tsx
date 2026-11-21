@@ -1,8 +1,8 @@
-import { Product } from "@/types/product";
+import { RetailProduct } from "@/types/retail-product";
 import { Card } from "./card";
 import Image from "next/image";
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: RetailProduct }) {
   return (
     <Card
       key={product.id}

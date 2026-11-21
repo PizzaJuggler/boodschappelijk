@@ -9,7 +9,7 @@ import {
   useSearchProducts,
 } from "@/api/price-prophet";
 import { useDebounce } from "react-use";
-import { Product } from "@/types/product";
+import { RetailProduct } from "@/types/retail-product";
 import { ProductSearchResult, SearchResponse } from "@/api/price-prophet/model";
 
 export default function SearchBox() {
@@ -25,7 +25,9 @@ export default function SearchBox() {
     [query],
   );
 
-  const mapper: (products: ProductSearchResult[]) => Product[] = (products) => {
+  const mapper: (products: ProductSearchResult[]) => RetailProduct[] = (
+    products,
+  ) => {
     return products.map((product) => ({
       id: product.base_product_id ?? "",
       imgSrc: product.image_url ?? "",

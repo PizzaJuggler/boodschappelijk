@@ -1,6 +1,3 @@
-export type Product = {
-  id: string;
-  imgSrc: string;
-  name: string;
-  quantity: string;
-}
+import { Identifiable } from "./identifiable";
+
+export type Product = Identifiable;

@@ -1,9 +1,9 @@
-import { Product } from "@/types/product";
+import { RetailProduct } from "@/types/retail-product";
 import { ProductCard } from "../product-card";
 import { Spinner } from "../spinner";
 
 type Props = {
-  results: Product[];
+  results: RetailProduct[];
   loading: boolean;
 };
 

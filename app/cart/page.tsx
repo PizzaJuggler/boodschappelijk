@@ -1,7 +1,7 @@
 import { ProductCard } from "@/components/ui/product-card";
-import { Product } from "@/types/product";
+import { RetailProduct } from "@/types/retail-product";
 
-const products: Product[] = [
+const products: RetailProduct[] = [
   {
     id: "2f575d68-52d9-4ef4-b4ab-cc585376edcc",
     name: "Pizzadeeg",
