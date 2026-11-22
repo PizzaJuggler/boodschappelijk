@@ -1,3 +1,5 @@
 import { Identifiable } from "./identifiable";
 
-export type Product = Identifiable;
+export type Product = Identifiable & {
+  quantity: number;
+};

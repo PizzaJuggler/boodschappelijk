@@ -28,7 +28,7 @@ export default function Home() {
       {lists.map((list) => (
         <Link key={list.id} href={`/lists/${list.id}`}>
           <Card className="hover:shadow-md px-4 transition-shadow cursor-pointer flex flex-col">
-            <CardContent className="flex justify-between">
+            <CardContent className="flex justify-between items-center">
               <div>{list.name}</div>
               <Button onClick={() => removeList(list.id)}>
                 <Trash />

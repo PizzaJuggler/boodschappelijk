@@ -1,8 +1,16 @@
 "use client";
 import AddItem from "@/components/ui/add-item";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { selectSelectedList } from "@/stores/ProductList/selectors";
 import { useProductListStore } from "@/stores/ProductList/store";
+import { Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -18,7 +26,8 @@ function List() {
   const [productName, setProductName] = useState("");
   const { id } = useParams();
 
-  const { addProduct, selectList } = useProductListStore();
+  const { addProduct, removeProduct, selectList, adjustProductQuantity } =
+    useProductListStore();
 
   useEffect(() => {
     if (typeof id === "string") {
@@ -39,15 +48,49 @@ function List() {
         onSubmit={() => {
           console.log(list);
           if (list?.id) {
-            addProduct(list.id, { id: crypto.randomUUID(), name: productName });
+            addProduct({
+              id: crypto.randomUUID(),
+              name: productName,
+              quantity: 1,
+            });
           }
 
           setProductName("");
         }}
       />
-      {list?.products.map((product) => (
-        <Card key={product.id}>{product.name}</Card>
-      ))}
+      <div className="flex flex-col gap-4 mt-4">
+        {list?.products.map((product) => (
+          <Card key={product.id}>
+            <CardContent className="flex items-center">
+              <span>{product.name}</span>
+
+              <div className="flex gap-2">
+                <Button
+                  className="rounded-full aspect-square"
+                  onClick={() => adjustProductQuantity(product.id, -1)}
+                >
+                  -
+                </Button>
+                <Input
+                  type="number"
+                  className="w-12"
+                  value={product.quantity}
+                ></Input>
+                <Button
+                  className="rounded-full aspect-square"
+                  onClick={() => adjustProductQuantity(product.id, 1)}
+                >
+                  +
+                </Button>
+              </div>
+
+              <Button onClick={() => removeProduct(list.id, product.id)}>
+                <Trash />
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
