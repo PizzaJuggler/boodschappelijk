@@ -1,5 +1,5 @@
 "use client";
-import AddItem from "@/components/ui/add-item";
+import AddProduct from "@/components/ui/add-item";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/input-group";
 import { selectSelectedList } from "@/stores/ProductList/selectors";
 import { useProductListStore } from "@/stores/ProductList/store";
+import { ProductUnit } from "@/types/product";
 import { Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -24,6 +25,8 @@ export default function listWrapper() {
 
 function List() {
   const [productName, setProductName] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [unit, setUnit] = useState<ProductUnit>("stuk");
   const { id } = useParams();
 
   const { addProduct, removeProduct, selectList, adjustProductQuantity } =
@@ -39,54 +42,53 @@ function List() {
   return (
     <div>
       <h1 className="font-bold text-2xl">{list?.name}</h1>
-      <AddItem
+      <AddProduct
         title="Voeg product toe+"
-        item={productName}
-        onChange={(e) => {
+        name={productName}
+        quantity={quantity}
+        unit={unit}
+        onProductNameChange={(e) => {
           setProductName(e.target.value);
         }}
+        onQuantityChange={(e) => setQuantity(+e.target.value)}
+        onUnitChange={(newUnit) => {
+          if (!!newUnit) {
+            setUnit(newUnit);
+          }
+        }}
         onSubmit={() => {
-          console.log(list);
           if (list?.id) {
             addProduct({
               id: crypto.randomUUID(),
               name: productName,
-              quantity: 1,
+              quantity,
+              unit,
             });
           }
 
           setProductName("");
+          setQuantity(1);
+          setUnit("stuk");
         }}
       />
       <div className="flex flex-col gap-4 mt-4">
         {list?.products.map((product) => (
           <Card key={product.id}>
-            <CardContent className="flex items-center">
+            <CardContent className="flex items-center justify-between">
               <span>{product.name}</span>
+
+              <span>
+                {product.quantity} {product.unit}
+              </span>
 
               <div className="flex gap-2">
                 <Button
-                  className="rounded-full aspect-square"
-                  onClick={() => adjustProductQuantity(product.id, -1)}
+                  variant="ghost"
+                  onClick={() => removeProduct(product.id)}
                 >
-                  -
-                </Button>
-                <Input
-                  type="number"
-                  className="w-12"
-                  value={product.quantity}
-                ></Input>
-                <Button
-                  className="rounded-full aspect-square"
-                  onClick={() => adjustProductQuantity(product.id, 1)}
-                >
-                  +
+                  <Trash />
                 </Button>
               </div>
-
-              <Button onClick={() => removeProduct(list.id, product.id)}>
-                <Trash />
-              </Button>
             </CardContent>
           </Card>
         ))}

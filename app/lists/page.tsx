@@ -1,6 +1,6 @@
 "use client";
 
-import AddItem from "@/components/ui/add-item";
+import AddProduct from "@/components/ui/add-item";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProductListStore } from "@/stores/ProductList/store";
@@ -15,10 +15,10 @@ export default function Home() {
   return (
     <>
       <h1 className="font-bold text-2xl">Lijsten</h1>
-      <AddItem
+      <AddProduct
         title="Voeg lijst toe+"
         item={listName}
-        onChange={(e) => {
+        onProductNameChange={(e) => {
           setListName(e.target.value);
         }}
         onSubmit={() => {
