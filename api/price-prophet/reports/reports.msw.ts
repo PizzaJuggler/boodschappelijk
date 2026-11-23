@@ -93,5 +93,4 @@ export const getGetReportMockHandler = (overrideResponse?: ReportStatus | ((info
 export const getReportsMock = () => [
   getCreateReportMockHandler(),
   getListReportsMockHandler(),
-  getGetReportMockHandler()
-]
+  getGetReportMockHandler()]

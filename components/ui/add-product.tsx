@@ -13,12 +13,13 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { Field, FieldLabel } from "./field";
 import { useTranslations } from "next-intl";
+import { Spinner } from "./spinner";
 
 type Props = {
-  title: string;
-  name: string | number | readonly string[] | undefined;
-  quantity: string | number | readonly string[] | undefined;
+  name: string;
+  quantity: number;
   unit: ProductUnit | undefined;
+  isLoading: boolean;
   onSubmit: () => void;
   onProductNameChange: ChangeEventHandler<HTMLInputElement>;
   onQuantityChange: ChangeEventHandler<HTMLInputElement>;
@@ -31,7 +32,7 @@ const items = (["stuk", "g", "L"] satisfies ProductUnit[]).map((unit) => ({
 }));
 
 export default function AddProduct({
-  title,
+  isLoading,
   name,
   quantity,
   unit,
@@ -52,7 +53,12 @@ export default function AddProduct({
     >
       <Field>
         <FieldLabel htmlFor="name">{t("product.name")}</FieldLabel>
-        <Input id="productName" value={name} onChange={onProductNameChange} />
+        <Input
+          id="productName"
+          value={name}
+          onChange={onProductNameChange}
+          disabled={isLoading}
+        />
       </Field>
 
       <Field>
@@ -61,6 +67,7 @@ export default function AddProduct({
           id="quantity"
           value={quantity}
           onChange={onQuantityChange}
+          disabled={isLoading}
         ></Input>
       </Field>
 
@@ -72,6 +79,7 @@ export default function AddProduct({
           items={items}
           value={unit}
           onValueChange={onUnitChange}
+          disabled={isLoading}
         >
           <SelectTrigger className="w-full max-w-48">
             <SelectValue />
@@ -89,7 +97,13 @@ export default function AddProduct({
         </Select>
       </Field>
 
-      <Button type="submit">{t("product.add")}</Button>
+      <Button
+        type="submit"
+        disabled={!name?.trim() || quantity <= 0 || isLoading}
+      >
+        {t("product.add")}
+        {isLoading && <Spinner />}
+      </Button>
     </form>
   );
 }

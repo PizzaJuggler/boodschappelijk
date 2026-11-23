@@ -41,7 +41,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans">
         <NextIntlClientProvider>
           <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
-            <h1 className="font-bold">{t("app.name")}</h1>
+            <div className="md:w-3xl md:mx-auto px-4">
+              <h1 className="font-bold">{t("app.name")}</h1>
+            </div>
           </nav>
 
           <Providers>

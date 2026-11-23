@@ -133,5 +133,4 @@ export const getDealsMock = () => [
   getGetDealsSummaryMockHandler(),
   getListPopularDealsMockHandler(),
   getListDealsByTypeMockHandler(),
-  getListNewDealsMockHandler()
-]
+  getListNewDealsMockHandler()]

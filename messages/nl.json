@@ -6,6 +6,8 @@
     "add": "Voeg product toe +",
     "unit": "Eenheid",
     "quantity": "Hoeveelheid",
-    "name": "Naam"
+    "name": "Naam",
+    "label": "{count, plural, =0 {geen producten} =1 {# product} other {# producten}}",
+    "discounts": "{count, plural, =0 {geen aanbiedingen} =1 {#aanbiedingen} other {# aanbiedingen}}"
   }
 }

@@ -78,5 +78,4 @@ export const getGetPartnerUsageMockHandler = (overrideResponse?: PartnerUsage | 
 }
 export const getPartnersMock = () => [
   getRequestFreeKeyMockHandler(),
-  getGetPartnerUsageMockHandler()
-]
+  getGetPartnerUsageMockHandler()]

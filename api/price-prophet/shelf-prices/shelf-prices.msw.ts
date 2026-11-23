@@ -76,5 +76,4 @@ export const getListShelfPriceHistoryMockHandler = (overrideResponse?: ShelfPric
 }
 export const getShelfPricesMock = () => [
   getSearchShelfPricesMockHandler(),
-  getListShelfPriceHistoryMockHandler()
-]
+  getListShelfPriceHistoryMockHandler()]

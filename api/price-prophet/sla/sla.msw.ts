@@ -61,5 +61,4 @@ export const getGetSlaSummaryMockHandler = (overrideResponse?: SlaSummary | ((in
   }, options)
 }
 export const getSlaMock = () => [
-  getGetSlaSummaryMockHandler()
-]
+  getGetSlaSummaryMockHandler()]

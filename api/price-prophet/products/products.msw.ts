@@ -177,5 +177,4 @@ export const getProductsMock = () => [
   getSearchProductsByPathMockHandler(),
   getListProductsByFolderMockHandler(),
   getListProductsByRetailerMockHandler(),
-  getListPromotionsMockHandler()
-]
+  getListPromotionsMockHandler()]

@@ -123,5 +123,4 @@ export const getMatchingMock = () => [
   getMatchByProductMockHandler(),
   getComparePricesMockHandler(),
   getGetEanCoverageMockHandler(),
-  getMatchIngredientsMockHandler()
-]
+  getMatchIngredientsMockHandler()]

@@ -29,25 +29,6 @@
  * **Nederlands:** [/docs](/docs).
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   Error,
   HTTPValidationError,
@@ -55,8 +36,6 @@ import type {
   KeySignupRequest,
   PartnerUsage
 } from '../model';
-
-
 
 
 const getHeaders = (...sources: (RequestInit['headers'] | Record<string, string | undefined>)[]) => {
@@ -77,22 +56,6 @@ const getHeaders = (...sources: (RequestInit['headers'] | Record<string, string 
     layers.push(layer);
   }
   return Object.fromEntries(layers.reverse().flat()) as Extract<RequestInit['headers'], Record<string, unknown>>;
-};
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
 };
 
 export type requestFreeKeyResponse202 = {
@@ -165,63 +128,7 @@ export const requestFreeKey = async (keySignupRequest: KeySignupRequest, options
 }
 
 
-
-
-
-export const getRequestFreeKeyMutationKey = () => ['requestFreeKey'] as const;
-
-export const getRequestFreeKeyMutationOptions = <TError = Error | HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestFreeKey>>, TError,RequestFreeKeyMutationVariables, TContext>, fetch?: RequestInit}
-): UseMutationOptions<Awaited<ReturnType<typeof requestFreeKey>>, TError,RequestFreeKeyMutationVariables, TContext> => {
-
-const mutationKey = getRequestFreeKeyMutationKey();
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestFreeKey>>, RequestFreeKeyMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  requestFreeKey(data,fetchOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RequestFreeKeyMutationResult = NonNullable<Awaited<ReturnType<typeof requestFreeKey>>>
-    export type RequestFreeKeyMutationBody = KeySignupRequest
-    export type RequestFreeKeyMutationError = Error | HTTPValidationError
-    export type RequestFreeKeyMutationVariables = {data: KeySignupRequest}
-
-    /**
- * Request a free API key. We mail a link; clicking it issues the key.
- *
- * The response is deliberately the same whether or not the address already has
- * a key — otherwise this endpoint would answer "is X a customer of yours?" for
- * any X. The 5/hour cap is per IP and exists so nobody can use us to mail-bomb
- * a stranger's inbox.
- * @summary Request Free Key
- */
-export const useRequestFreeKey = <TError = Error | HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestFreeKey>>, TError,RequestFreeKeyMutationVariables, TContext>, fetch?: RequestInit}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof requestFreeKey>>,
-        TError,
-        RequestFreeKeyMutationVariables,
-        TContext
-      > => {
-      return useMutation(getRequestFreeKeyMutationOptions(options), queryClient);
-    }
-    export type getPartnerUsageResponse200 = {
+export type getPartnerUsageResponse200 = {
   data: PartnerUsage
   status: 200
 }
@@ -295,138 +202,5 @@ export const getPartnerUsage = async ( options?: RequestInit): Promise<getPartne
   const data: getPartnerUsageResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as getPartnerUsageResponse
 }
-
-
-
-
-
-export const getGetPartnerUsageQueryKey = () => {
-    return [
-    `/price-prophet/api/v1/partner/usage`
-    ] as const;
-    }
-
-
-export const getGetPartnerUsageQueryOptions = <TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
-) => {
-
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetPartnerUsageQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPartnerUsage>>> = ({ signal }) => getPartnerUsage({ signal, ...fetchOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetPartnerUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getPartnerUsage>>>
-export type GetPartnerUsageQueryError = Error
-
-
-/**
- * Partner checks their own API usage.
- *
- * Requires a valid partner API key in the X-API-Key header.
- * Returns current rate limit usage, account info and `daily_usage`: requests
- * per Dutch calendar day over the last 30 days (oldest first), split by
- * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
- * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
- * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
- * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
- * now, never an empty history.
- *
- * `plan` is the plan that is enforced: an expired trial reads `free`.
- * @summary Partner Usage
- */
-export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPartnerUsage>>,
-          TError,
-          Awaited<ReturnType<typeof getPartnerUsage>>
-        > , 'initialData'
-      >, fetch?: RequestInit}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * Partner checks their own API usage.
- *
- * Requires a valid partner API key in the X-API-Key header.
- * Returns current rate limit usage, account info and `daily_usage`: requests
- * per Dutch calendar day over the last 30 days (oldest first), split by
- * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
- * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
- * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
- * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
- * now, never an empty history.
- *
- * `plan` is the plan that is enforced: an expired trial reads `free`.
- * @summary Partner Usage
- */
-export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPartnerUsage>>,
-          TError,
-          Awaited<ReturnType<typeof getPartnerUsage>>
-        > , 'initialData'
-      >, fetch?: RequestInit}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * Partner checks their own API usage.
- *
- * Requires a valid partner API key in the X-API-Key header.
- * Returns current rate limit usage, account info and `daily_usage`: requests
- * per Dutch calendar day over the last 30 days (oldest first), split by
- * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
- * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
- * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
- * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
- * now, never an empty history.
- *
- * `plan` is the plan that is enforced: an expired trial reads `free`.
- * @summary Partner Usage
- */
-export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * Partner checks their own API usage.
- *
- * Requires a valid partner API key in the X-API-Key header.
- * Returns current rate limit usage, account info and `daily_usage`: requests
- * per Dutch calendar day over the last 30 days (oldest first), split by
- * endpoint group (`search`, `products`, `deals`, `match`, `shelf_prices`,
- * `price_history`, `forecast`, `overig`) and status class (`2xx`, `3xx`,
- * `4xx`, `429` = over your rate limit, `403_plan` = paid data without a paid
- * plan, `5xx`). `daily_usage` is `null` when the history cannot be read right
- * now, never an empty history.
- *
- * `plan` is the plan that is enforced: an expired trial reads `free`.
- * @summary Partner Usage
- */
-export function useGetPartnerUsage<TData = Awaited<ReturnType<typeof getPartnerUsage>>, TError = Error>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartnerUsage>>, TError, TData>>, fetch?: RequestInit}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetPartnerUsageQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 

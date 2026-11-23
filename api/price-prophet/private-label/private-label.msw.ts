@@ -61,5 +61,4 @@ export const getListPrivateLabelEquivalentsMockHandler = (overrideResponse?: Pri
   }, options)
 }
 export const getPrivateLabelMock = () => [
-  getListPrivateLabelEquivalentsMockHandler()
-]
+  getListPrivateLabelEquivalentsMockHandler()]

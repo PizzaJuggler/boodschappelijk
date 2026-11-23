@@ -91,5 +91,4 @@ export const getGetFilterStatsMockHandler = (overrideResponse?: FilterStats | ((
 export const getSearchMock = () => [
   getSearchProductsMockHandler(),
   getListCategoriesMockHandler(),
-  getGetFilterStatsMockHandler()
-]
+  getGetFilterStatsMockHandler()]

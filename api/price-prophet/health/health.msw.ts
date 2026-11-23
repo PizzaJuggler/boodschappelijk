@@ -61,5 +61,4 @@ export const getGetHealthMockHandler = (overrideResponse?: HealthResponse | ((in
   }, options)
 }
 export const getHealthMock = () => [
-  getGetHealthMockHandler()
-]
+  getGetHealthMockHandler()]
