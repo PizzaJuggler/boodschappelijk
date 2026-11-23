@@ -4,7 +4,7 @@
   },
   "winner": {
     "mostDiscounts": "Je hebt de meeste aanbiedingen bij {retailer}",
-    "totalDiscounts": "{count, plural, =1 {In totaal een aanbieding gevonden} other {In totaal # aanbiedingen gevonden}}"
+    "totalDiscounts": "{count, plural, =1 {In totaal één aanbieding gevonden} other {In totaal # aanbiedingen gevonden}}"
   },
   "product": {
     "add": "Voeg product toe +",
@@ -12,13 +12,14 @@
     "quantity": "Hoeveelheid",
     "name": "Naam",
     "label": "{count, plural, =0 {geen producten} =1 {# product} other {# producten}}",
-    "discounts": "{count, plural, =0 {geen aanbiedingen} =1 {# aanbieding} other {# aanbiedingen}}"
+    "discounts": "{count, plural, =0 {geen aanbiedingen} =1 {# aanbieding} other {# aanbiedingen}}",
+    "pieces": "{count, plural, =1 {1 stuk} other {# stuks}}"
   },
   "retailers": {
     "albert_heijn": "Albert Heijn",
     "jumbo": "Jumbo",
     "aldi": "Aldi",
-    "lidl": "lidl",
+    "lidl": "Lidl",
     "ekoplaza": "Ekoplaza",
     "plus": "Plus",
     "poiesz": "Poiesz",

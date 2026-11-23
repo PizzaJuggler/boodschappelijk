@@ -12,13 +12,14 @@
     "quantity": "Quantity",
     "name": "Name",
     "label": "{count, plural, =0 {no products} =1 {# product} other {# products}}",
-    "discounts": "{count, plural, =0 {no discounts} =1 {# discount} other {# discounts}}"
+    "discounts": "{count, plural, =0 {no discounts} =1 {# discount} other {# discounts}}",
+    "pieces": "{count, plural, =1 {1 piece} other {# pieces}}"
   },
   "retailers": {
     "albert_heijn": "Albert Heijn",
     "jumbo": "Jumbo",
     "aldi": "Aldi",
-    "lidl": "lidl",
+    "lidl": "Lidl",
     "ekoplaza": "Ekoplaza",
     "plus": "Plus",
     "poiesz": "Poiesz",

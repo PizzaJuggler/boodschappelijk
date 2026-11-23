@@ -19,7 +19,15 @@ export default function ProductCard({ product }: Props) {
         <span>{product.name}</span>
 
         <span>
-          {product.quantity} {product.unit}
+          {product.unit === "stuk" && (
+            <span>{t("product.pieces", { count: product.quantity })}</span>
+          )}
+          {product.unit !== "stuk" && (
+            <span>
+              {" "}
+              {product.quantity} {product.unit}
+            </span>
+          )}
         </span>
 
         <span>

@@ -34,7 +34,7 @@ export type RetailerStore = {
 export const useRetailerStore = create<RetailerStore>()(
   persist(
     (set) => ({
-      selectedRetailers: [],
+      selectedRetailers: ["albert_heijn", "aldi", "jumbo", "plus", "lidl"],
       setSelectedRetailers: (retailers) =>
         set({ selectedRetailers: retailers }),
     }),

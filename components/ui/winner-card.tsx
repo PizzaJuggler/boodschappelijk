@@ -12,6 +12,10 @@ type Props = {
 export default function WinnerCard({ retailer, discountQuantity }: Props) {
   const t = useTranslations();
 
+  if (discountQuantity === 0) {
+    return;
+  }
+
   return (
     <div>
       <Card className="border-primary border-2 bg-accent">
@@ -20,8 +24,11 @@ export default function WinnerCard({ retailer, discountQuantity }: Props) {
             <Image
               width={21}
               height={21}
-              alt=""
+              alt={retailer}
               src={`/img/stores/${retailer}-logo.webp`}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
             />
           )}
           <div>
