@@ -2,7 +2,7 @@ import { RetailProduct } from "@/types/retail-product";
 import { Card } from "./card";
 import Image from "next/image";
 
-function ProductCard({ product }: { product: RetailProduct }) {
+function RetailProductCard({ product }: { product: RetailProduct }) {
   return (
     <Card
       key={product.id}
@@ -25,4 +25,4 @@ function ProductCard({ product }: { product: RetailProduct }) {
   );
 }
 
-export { ProductCard };
+export { RetailProductCard as ProductCard };
