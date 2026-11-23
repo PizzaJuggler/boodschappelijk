@@ -12,6 +12,7 @@ import { ProductUnit } from "@/types/product";
 import { Input } from "./input";
 import { Button } from "./button";
 import { Field, FieldLabel } from "./field";
+import { useTranslations } from "next-intl";
 
 type Props = {
   title: string;
@@ -39,6 +40,8 @@ export default function AddProduct({
   onQuantityChange,
   onUnitChange,
 }: Props) {
+  const t = useTranslations();
+
   return (
     <form
       className="flex gap-4 items-end"
@@ -48,16 +51,12 @@ export default function AddProduct({
       }}
     >
       <Field>
-        <FieldLabel htmlFor="name">Productnaam</FieldLabel>
-        <Input
-          id="productName"
-          value={name}
-          onChange={onProductNameChange}
-        ></Input>
+        <FieldLabel htmlFor="name">{t("product.name")}</FieldLabel>
+        <Input id="productName" value={name} onChange={onProductNameChange} />
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="quantity">Hoeveelheid</FieldLabel>
+        <FieldLabel htmlFor="quantity">{t("product.quantity")}</FieldLabel>
         <Input
           id="quantity"
           value={quantity}
@@ -66,7 +65,7 @@ export default function AddProduct({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="unit">Eenheid</FieldLabel>
+        <FieldLabel htmlFor="unit">{t("product.unit")}</FieldLabel>
 
         <Select
           id="unit"
@@ -90,7 +89,7 @@ export default function AddProduct({
         </Select>
       </Field>
 
-      <Button type="submit">Voeg product toe +</Button>
+      <Button type="submit">{t("product.add")}</Button>
     </form>
   );
 }

@@ -1,0 +1,11 @@
+{
+  "app": {
+    "name": "Boodschappelijk"
+  },
+  "product": {
+    "add": "Voeg product toe +",
+    "unit": "Eenheid",
+    "quantity": "Hoeveelheid",
+    "name": "Naam"
+  }
+}

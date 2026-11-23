@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Providers } from "./providers";
+import { NextIntlClientProvider, useTranslations } from "next-intl";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -23,6 +24,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const t = useTranslations();
+
   return (
     <html
       lang="en"
@@ -36,17 +39,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
-          <h1 className="font-bold">Boodschappelijk</h1>
-        </nav>
+        <NextIntlClientProvider>
+          <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
+            <h1 className="font-bold">{t("app.name")}</h1>
+          </nav>
 
-        <Providers>
-          <div className="md:w-3xl md:mx-auto pb-20 flex flex-col px-4 py-4 gap-4">
-            {children}
-          </div>
+          <Providers>
+            <div className="md:w-3xl md:mx-auto pb-20 flex flex-col px-4 py-4 gap-4">
+              {children}
+            </div>
 
-          <BottomSheet />
-        </Providers>
+            <BottomSheet />
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
