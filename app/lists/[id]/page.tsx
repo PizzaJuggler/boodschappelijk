@@ -30,7 +30,7 @@ export default function listWrapper() {
 function List() {
   const t = useTranslations();
   const [productName, setProductName] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState<ProductUnit>("stuk");
   const { id } = useParams();
   const { addProduct, removeProduct, selectList } = useProductListStore();
@@ -53,33 +53,43 @@ function List() {
   const cheapestRetailerCount: Map<string, number> = new Map();
 
   filteredList?.products.forEach((product) => {
-    const cheapestRetailer = product.productDiscounts[0]?.retailer;
-    if (cheapestRetailer == null) {
-      return;
-    }
+    const alreadyAddedRetailer = new Set<Retailer>();
+    product.productDiscounts?.forEach((discount) => {
+      const cheapestRetailer = discount.retailer;
 
-    if (cheapestRetailerCount.has(cheapestRetailer)) {
-      cheapestRetailerCount.set(
-        cheapestRetailer,
-        cheapestRetailerCount.get(cheapestRetailer) ?? 0 + 1,
-      );
-    } else {
-      cheapestRetailerCount.set(cheapestRetailer, 1);
-    }
+      if (alreadyAddedRetailer.has(cheapestRetailer)) {
+        return;
+      }
+
+      alreadyAddedRetailer.add(cheapestRetailer);
+      if (cheapestRetailerCount.has(cheapestRetailer)) {
+        cheapestRetailerCount.set(
+          cheapestRetailer,
+          (cheapestRetailerCount.get(cheapestRetailer) ?? 0) + 1,
+        );
+      } else {
+        cheapestRetailerCount.set(cheapestRetailer, 1);
+      }
+    });
   });
 
   const entries = [...cheapestRetailerCount.entries()];
 
+  console.log(cheapestRetailerCount);
   const [store, value] = entries.length
     ? entries.reduce((max, current) => (current[1] > max[1] ? current : max))
     : [null, 0];
 
   return (
-    <div>
+    <div className="flex flex-col gap-8">
       <h1 className="font-bold text-2xl">{list?.name}</h1>
       <div>
-        Goedkoopste winkel:{store}
-        Aantal aanbiedingen: {value}
+        {store && (
+          <div>
+            Winkel met de meeste aanbiedingen: {t(`retailers.${store}`)}
+          </div>
+        )}
+        <div>Aantal aanbiedingen: {value}</div>
       </div>
       <AddProduct
         isLoading={isSubmitting}
@@ -89,7 +99,7 @@ function List() {
         onProductNameChange={(e) => {
           setProductName(e.target.value);
         }}
-        onQuantityChange={(e) => setQuantity(+e.target.value)}
+        onQuantityChange={(e) => setQuantity(e.target.value)}
         onUnitChange={(newUnit) => {
           if (!!newUnit) {
             setUnit(newUnit);
@@ -125,7 +135,7 @@ function List() {
             addProduct({
               id: crypto.randomUUID(),
               name: productName,
-              quantity,
+              quantity: Number(quantity),
               unit,
               productDiscounts: mapper(
                 "results" in productDiscounts.data
@@ -136,13 +146,13 @@ function List() {
           }
 
           setProductName("");
-          setQuantity(1);
+          setQuantity("1");
           setUnit("stuk");
           setIsSubmitting(false);
         }}
       />
 
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="flex flex-col gap-4">
         <RetailFilter />
 
         {filteredList?.products.map((product) => (
@@ -154,7 +164,13 @@ function List() {
                 {product.quantity} {product.unit}
               </span>
 
-              <span>
+              <span
+                className={
+                  product.productDiscounts.length === 0
+                    ? "text-muted-foreground"
+                    : ""
+                }
+              >
                 {t("product.discounts", {
                   count: product.productDiscounts.length,
                 })}

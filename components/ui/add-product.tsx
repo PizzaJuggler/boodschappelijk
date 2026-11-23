@@ -17,7 +17,7 @@ import { Spinner } from "./spinner";
 
 type Props = {
   name: string;
-  quantity: number;
+  quantity: string;
   unit: ProductUnit | undefined;
   isLoading: boolean;
   onSubmit: () => void;
@@ -26,7 +26,7 @@ type Props = {
   onUnitChange: (newUnit: ProductUnit | null) => void;
 };
 
-const items = (["stuk", "g", "L"] satisfies ProductUnit[]).map((unit) => ({
+const items = (["stuk", "kg", "L"] satisfies ProductUnit[]).map((unit) => ({
   label: unit,
   value: unit,
 }));
@@ -99,7 +99,7 @@ export default function AddProduct({
 
       <Button
         type="submit"
-        disabled={!name?.trim() || quantity <= 0 || isLoading}
+        disabled={!name?.trim() || +quantity <= 0 || isLoading}
       >
         {t("product.add")}
         {isLoading && <Spinner />}
