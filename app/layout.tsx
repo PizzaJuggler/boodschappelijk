@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Providers } from "./providers";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,7 +42,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <NextIntlClientProvider>
           <nav className="h-full px-4 py-4 bg-accent shadow-md z-1">
             <div className="md:w-3xl md:mx-auto px-4">
-              <h1 className="font-bold">{t("app.name")}</h1>
+              <Link href="/">
+                <h1 className="font-bold">{t("app.name")}</h1>
+              </Link>
             </div>
           </nav>
 
@@ -50,8 +52,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <div className="md:w-3xl md:mx-auto pb-20 flex flex-col px-4 py-4 gap-4">
               {children}
             </div>
-
-            <BottomSheet />
           </Providers>
         </NextIntlClientProvider>
       </body>

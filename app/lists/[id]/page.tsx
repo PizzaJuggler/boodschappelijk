@@ -5,8 +5,13 @@ import AddProduct from "@/components/ui/add-product";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import RetailFilter from "@/components/ui/retail-filter";
-import { selectSelectedList } from "@/stores/ProductList/selectors";
+import {
+  selectedListWithFilteredDiscounts,
+  selectSelectedList,
+} from "@/stores/ProductList/selectors";
 import { useProductListStore } from "@/stores/ProductList/store";
+import { selectedRetailers } from "@/stores/RetailerStore/selectors";
+import { Retailer, useRetailerStore } from "@/stores/RetailerStore/store";
 import { mapProductUnit, ProductUnit } from "@/types/product";
 import { RetailProduct } from "@/types/retail-product";
 import { Trash } from "lucide-react";
@@ -30,6 +35,13 @@ function List() {
   const { id } = useParams();
   const { addProduct, removeProduct, selectList } = useProductListStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedList = useProductListStore(selectSelectedList);
+  const retailers = useRetailerStore(selectedRetailers);
+
+  const filteredList = selectedListWithFilteredDiscounts(
+    selectedList,
+    retailers,
+  );
 
   useEffect(() => {
     if (typeof id === "string") {
@@ -40,8 +52,8 @@ function List() {
 
   const cheapestRetailerCount: Map<string, number> = new Map();
 
-  list?.products.forEach((product) => {
-    const cheapestRetailer = product.productDiscounts[0].retailer;
+  filteredList?.products.forEach((product) => {
+    const cheapestRetailer = product.productDiscounts[0]?.retailer;
     if (cheapestRetailer == null) {
       return;
     }
@@ -105,7 +117,7 @@ function List() {
               validUntil: product.valid_until,
               multiBuyPrice: product.multi_buy_price,
               multiBuyQuantity: product.multi_buy_quantity,
-              retailer: product.retailer,
+              retailer: product.retailer as Retailer,
             }));
           };
 
@@ -133,7 +145,7 @@ function List() {
       <div className="flex flex-col gap-4 mt-4">
         <RetailFilter />
 
-        {list?.products.map((product) => (
+        {filteredList?.products.map((product) => (
           <Card key={product.id}>
             <CardContent className="grid grid-cols-[1fr_1fr_1fr_auto] items-center">
               <span>{product.name}</span>

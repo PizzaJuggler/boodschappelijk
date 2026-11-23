@@ -1,3 +1,4 @@
+import { Retailer } from "@/stores/RetailerStore/store";
 import { Empty } from "./empty";
 import { ProductUnit } from "./product";
 
@@ -13,4 +14,5 @@ export type RetailProduct = {
   validUntil: string | Empty;
   multiBuyQuantity: number | Empty;
   multiBuyPrice: number | Empty;
+  retailer: Retailer;
 };

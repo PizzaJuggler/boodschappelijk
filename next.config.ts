@@ -59,7 +59,7 @@ const nextConfig: NextConfig = {
   redirects: () => [
     {
       source: "/",
-      destination: "/search",
+      destination: "/lists",
       permanent: false,
     },
   ],

@@ -7,6 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "./combobox";
+import { useRetailerStore } from "@/stores/RetailerStore/store";
 
 const retailers: { label: string; value: string }[] = [
   "albert_heijn",
@@ -32,10 +33,19 @@ const retailers: { label: string; value: string }[] = [
 ].map((retailer) => ({ label: retailer, value: retailer }));
 
 export default function retailFilter() {
+  const { selectedRetailers, setSelectedRetailers } = useRetailerStore();
+
   return (
     <div className="flex gap-4 items-center">
       <Filter className="w-4" />
-      <Combobox items={retailers} multiple>
+      <Combobox
+        items={retailers}
+        multiple
+        value={selectedRetailers}
+        onValueChange={(retailers) => {
+          setSelectedRetailers(retailers);
+        }}
+      >
         <ComboboxInput placeholder="Selecteer supermarkten" />
         <ComboboxContent>
           <ComboboxEmpty>No items found.</ComboboxEmpty>
