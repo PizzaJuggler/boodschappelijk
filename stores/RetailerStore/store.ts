@@ -1,7 +1,7 @@
 import { persist } from "zustand/middleware";
 import { create } from "zustand/react";
 
-const retailers = [
+export const RETAILERS = [
   "albert_heijn",
   "jumbo",
   "aldi",
@@ -24,7 +24,7 @@ const retailers = [
   "dirk",
 ] as const;
 
-export type Retailer = (typeof retailers)[number];
+export type Retailer = (typeof RETAILERS)[number];
 
 export type RetailerStore = {
   selectedRetailers: Retailer[];

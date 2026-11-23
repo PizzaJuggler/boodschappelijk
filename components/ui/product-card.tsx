@@ -1,28 +1,47 @@
-import { RetailProduct } from "@/types/retail-product";
-import { Card } from "./card";
-import Image from "next/image";
+import { Product } from "@/types/product";
+import { Card, CardContent } from "./card";
+import { Button } from "./button";
+import { useProductListStore } from "@/stores/ProductList/store";
+import { Trash } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-function ProductCard({ product }: { product: RetailProduct }) {
+type Props = {
+  product: Product;
+};
+
+export default function ProductCard({ product }: Props) {
+  const { removeProduct } = useProductListStore();
+  const t = useTranslations();
+
   return (
-    <Card
-      key={product.id}
-      className="hover:shadow-md transition-shadow cursor-pointer flex gap-4 flex-row items-center py-0 pl-2"
-    >
-      <div className="relative w-10 shrink-0 self-stretch flex items-center justify-center">
-        <Image
-          src={product.imgSrc}
-          alt={product.name}
-          width={64}
-          height={64}
-          className="object-cover"
-        />
-      </div>
-      <div className="py-2">
-        <div className="font-bold">{product.name}</div>
-        <div className="text-muted-foreground">{product.quantity}</div>
-      </div>
+    <Card key={product.id}>
+      <CardContent className="grid grid-cols-[1fr_1fr_1fr_auto] items-center">
+        <span>{product.name}</span>
+
+        <span>
+          {product.quantity} {product.unit}
+        </span>
+
+        <span>
+          <span
+            className={
+              product.productDiscounts.length === 0
+                ? "text-muted-foreground"
+                : "rounded-full bg-primary/75 text-white px-2 py-1"
+            }
+          >
+            {t("product.discounts", {
+              count: product.productDiscounts.length,
+            })}
+          </span>
+        </span>
+
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => removeProduct(product.id)}>
+            <Trash />
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
-
-export { ProductCard };

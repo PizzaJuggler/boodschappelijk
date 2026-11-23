@@ -1,5 +1,5 @@
 import { RetailProduct } from "@/types/retail-product";
-import { ProductCard } from "../product-card";
+import { ProductCard } from "../retail-product-card";
 import { Spinner } from "../spinner";
 
 type Props = {

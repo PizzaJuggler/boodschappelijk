@@ -2,6 +2,10 @@
   "app": {
     "name": "Boodschappelijk"
   },
+  "winner": {
+    "mostDiscounts": "Je hebt de meeste aanbiedingen bij {retailer}",
+    "totalDiscounts": "{count, plural, =1 {In totaal een aanbieding gevonden} other {In totaal # aanbiedingen gevonden}}"
+  },
   "product": {
     "add": "Voeg product toe +",
     "unit": "Eenheid",

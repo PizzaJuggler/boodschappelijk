@@ -1,4 +1,4 @@
-import { ProductCard } from "@/components/ui/product-card";
+import { ProductCard } from "@/components/ui/retail-product-card";
 import { RetailProduct } from "@/types/retail-product";
 
 const products: RetailProduct[] = [

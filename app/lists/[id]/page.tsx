@@ -2,9 +2,9 @@
 import { searchProducts } from "@/api/price-prophet";
 import { ProductSearchResult } from "@/api/price-prophet/model";
 import AddProduct from "@/components/ui/add-product";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import ProductCard from "@/components/ui/product-card";
 import RetailFilter from "@/components/ui/retail-filter";
+import WinnerCard from "@/components/ui/winner-card";
 import {
   selectedListWithFilteredDiscounts,
   selectSelectedList,
@@ -14,7 +14,6 @@ import { selectedRetailers } from "@/stores/RetailerStore/selectors";
 import { Retailer, useRetailerStore } from "@/stores/RetailerStore/store";
 import { mapProductUnit, ProductUnit } from "@/types/product";
 import { RetailProduct } from "@/types/retail-product";
-import { Trash } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -48,9 +47,9 @@ function List() {
       selectList(id);
     }
   }, [id]);
-  const list = useProductListStore(selectSelectedList);
 
-  const cheapestRetailerCount: Map<string, number> = new Map();
+  const list = useProductListStore(selectSelectedList);
+  const cheapestRetailerCount: Map<Retailer, number> = new Map();
 
   filteredList?.products.forEach((product) => {
     const alreadyAddedRetailer = new Set<Retailer>();
@@ -75,22 +74,60 @@ function List() {
 
   const entries = [...cheapestRetailerCount.entries()];
 
-  console.log(cheapestRetailerCount);
-  const [store, value] = entries.length
+  const [retailer, discountQuantity] = entries.length
     ? entries.reduce((max, current) => (current[1] > max[1] ? current : max))
     : [null, 0];
+
+  const submitProduct = async () => {
+    setIsSubmitting(true);
+    const productDiscounts = await searchProducts({
+      q: productName,
+      sort_by: "price",
+    });
+
+    const mapper: (products: ProductSearchResult[]) => RetailProduct[] = (
+      products,
+    ) => {
+      return products.map((product) => ({
+        id: product.base_product_id ?? "",
+        imgSrc: product.image_url ?? "",
+        name: product.name ?? "",
+        quantity: product.quantity ?? "",
+        savingsAmount: product.savings_amount,
+        unit: mapProductUnit(product.unit),
+        unitPrice: product.unit_price,
+        validFrom: product.valid_from,
+        validUntil: product.valid_until,
+        multiBuyPrice: product.multi_buy_price,
+        multiBuyQuantity: product.multi_buy_quantity,
+        retailer: product.retailer as Retailer,
+      }));
+    };
+
+    if (list?.id) {
+      addProduct({
+        id: crypto.randomUUID(),
+        name: productName,
+        quantity: Number(quantity),
+        unit,
+        productDiscounts: mapper(
+          "results" in productDiscounts.data
+            ? productDiscounts.data?.results
+            : [],
+        ),
+      });
+    }
+
+    setProductName("");
+    setQuantity("1");
+    setUnit("stuk");
+    setIsSubmitting(false);
+  };
 
   return (
     <div className="flex flex-col gap-8">
       <h1 className="font-bold text-2xl">{list?.name}</h1>
-      <div>
-        {store && (
-          <div>
-            Winkel met de meeste aanbiedingen: {t(`retailers.${store}`)}
-          </div>
-        )}
-        <div>Aantal aanbiedingen: {value}</div>
-      </div>
+      <WinnerCard retailer={retailer} discountQuantity={discountQuantity} />
       <AddProduct
         isLoading={isSubmitting}
         name={productName}
@@ -105,87 +142,14 @@ function List() {
             setUnit(newUnit);
           }
         }}
-        onSubmit={async () => {
-          setIsSubmitting(true);
-          const productDiscounts = await searchProducts({
-            q: productName,
-            sort_by: "price",
-          });
-
-          const mapper: (products: ProductSearchResult[]) => RetailProduct[] = (
-            products,
-          ) => {
-            return products.map((product) => ({
-              id: product.base_product_id ?? "",
-              imgSrc: product.image_url ?? "",
-              name: product.name ?? "",
-              quantity: product.quantity ?? "",
-              savingsAmount: product.savings_amount,
-              unit: mapProductUnit(product.unit),
-              unitPrice: product.unit_price,
-              validFrom: product.valid_from,
-              validUntil: product.valid_until,
-              multiBuyPrice: product.multi_buy_price,
-              multiBuyQuantity: product.multi_buy_quantity,
-              retailer: product.retailer as Retailer,
-            }));
-          };
-
-          if (list?.id) {
-            addProduct({
-              id: crypto.randomUUID(),
-              name: productName,
-              quantity: Number(quantity),
-              unit,
-              productDiscounts: mapper(
-                "results" in productDiscounts.data
-                  ? productDiscounts.data?.results
-                  : [],
-              ),
-            });
-          }
-
-          setProductName("");
-          setQuantity("1");
-          setUnit("stuk");
-          setIsSubmitting(false);
-        }}
+        onSubmit={submitProduct}
       />
 
       <div className="flex flex-col gap-4">
         <RetailFilter />
 
         {filteredList?.products.map((product) => (
-          <Card key={product.id}>
-            <CardContent className="grid grid-cols-[1fr_1fr_1fr_auto] items-center">
-              <span>{product.name}</span>
-
-              <span>
-                {product.quantity} {product.unit}
-              </span>
-
-              <span
-                className={
-                  product.productDiscounts.length === 0
-                    ? "text-muted-foreground"
-                    : ""
-                }
-              >
-                {t("product.discounts", {
-                  count: product.productDiscounts.length,
-                })}
-              </span>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => removeProduct(product.id)}
-                >
-                  <Trash />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </div>
